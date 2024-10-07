@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>คำนวณการใช้ PAC</title>
+    <title>คำนวณการใช้ PAC และการรับ PAC</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -39,12 +39,12 @@
 </head>
 
 <body>
-    <h1>คำนวณการใช้ PAC</h1>
+    <h1>คำนวณการใช้ PAC และการรับ PAC</h1>
     <form id="pacForm">
         <label for="date">วันที่:</label>
         <input type="date" id="date" required><br>
 
-        <h3>Stock PAC ล่าสุด</h3>
+        <h3>Stock PAC ล่าสุด (m<sup>3</sup>)</h3>
         <label for="tankA">Tank A:</label>
         <input type="number" id="tankA" required><br>
         <label for="tankB">Tank B:</label>
@@ -65,16 +65,16 @@
         <input type="number" id="rw4" required><br>
 
         <h3>PAC Dose (mg/L)</h3>
-        <label for="phase1">เฟส 1:</label>
-        <input type="number" id="phase1" required><br>
-        <label for="phase2">เฟส 2:</label>
-        <input type="number" id="phase2" required><br>
-        <label for="phase3">เฟส 3:</label>
-        <input type="number" id="phase3" required><br>
-        <label for="phase4">เฟส 4:</label>
-        <input type="number" id="phase4" required><br>
+        <label for="pacdose1">เฟส 1:</label>
+        <input type="number" id="pacdose1" required><br>
+        <label for="pacdose2">เฟส 2:</label>
+        <input type="number" id="pacdose2" required><br>
+        <label for="pacdose3">เฟส 3:</label>
+        <input type="number" id="pacdose3" required><br>
+        <label for="pacdose4">เฟส 4:</label>
+        <input type="number" id="pacdose4" required><br>
 
-        <button type="button" onclick="calculatePAC()">คำนวณการใช้ PAC</button>
+        <button type="button" onclick="calculatePAC()">คำนวณการใช้ PAC และการรับ PAC</button>
     </form>
 
     <div class="result" id="result"></div>
@@ -82,29 +82,50 @@
     <script>
         function calculatePAC() {
             // Get input values
+            const tankA = parseFloat(document.getElementById('tankA').value);
+            const tankB = parseFloat(document.getElementById('tankB').value);
+            const tankC = parseFloat(document.getElementById('tankC').value);
+            const tankD = parseFloat(document.getElementById('tankD').value);
+
             const rw1 = parseFloat(document.getElementById('rw1').value);
             const rw2 = parseFloat(document.getElementById('rw2').value);
             const rw3 = parseFloat(document.getElementById('rw3').value);
             const rw4 = parseFloat(document.getElementById('rw4').value);
 
-            const phase1 = parseFloat(document.getElementById('phase1').value);
-            const phase2 = parseFloat(document.getElementById('phase2').value);
-            const phase3 = parseFloat(document.getElementById('phase3').value);
-            const phase4 = parseFloat(document.getElementById('phase4').value);
+            const pacdose1 = parseFloat(document.getElementById('pacdose1').value);
+            const pacdose2 = parseFloat(document.getElementById('pacdose2').value);
+            const pacdose3 = parseFloat(document.getElementById('pacdose3').value);
+            const pacdose4 = parseFloat(document.getElementById('pacdose4').value);
 
-            // Calculate PAC Use for each phase
-            const pacUse1 = (phase1 * rw1 * 3600 * 24) / 1000 / 1000 / 1.19 / 0.35;
-            const pacUse2 = (phase2 * rw2 * 3600 * 24) / 1000 / 1000 / 1.19 / 0.35;
-            const pacUse3 = (phase3 * rw3 * 3600 * 24) / 1000 / 1000 / 1.19 / 0.35;
-            const pacUse4 = (phase4 * rw4 * 3600 * 24) / 1000 / 1000 / 1.19 / 0.35;
+            // Calculate PAC Use for each phase (remove division by 1.19)
+            const pacuse1 = (pacdose1 * rw1 * 3600 * 24) / 1000 / 1000 / 0.35;
+            const pacuse2 = (pacdose2 * rw2 * 3600 * 24) / 1000 / 1000 / 0.35;
+            const pacuse3 = (pacdose3 * rw3 * 3600 * 24) / 1000 / 1000 / 0.35;
+            const pacuse4 = (pacdose4 * rw4 * 3600 * 24) / 1000 / 1000 / 0.35;
+
+            // Convert Tank A, B, C, D from m3 to tons
+            const tankA_ton = tankA * 1.19;
+            const tankB_ton = tankB * 1.19;
+            const tankC_ton = tankC * 1.19;
+            const tankD_ton = tankD * 1.19;
+
+            // Calculate Tank A+B and Tank C+D in tons
+            const tankab = tankA_ton + tankB_ton;
+            const tankcd = tankC_ton + tankD_ton;
+
+            // Calculate PAC Income
+            const pacincome_ab = 60 - tankab + (12 * pacuse1 * 0.5) + (12 * pacuse2 * 0.5);
+            const pacincome_cd = 60 - tankcd + (12 * pacuse3 * 0.5) + (12 * pacuse4 * 0.5);
 
             // Display results
             const resultDiv = document.getElementById('result');
             resultDiv.innerHTML = `
-                PAC Use เฟส 1: ${pacUse1.toFixed(2)} ตัน/วัน<br>
-                PAC Use เฟส 2: ${pacUse2.toFixed(2)} ตัน/วัน<br>
-                PAC Use เฟส 3: ${pacUse3.toFixed(2)} ตัน/วัน<br>
-                PAC Use เฟส 4: ${pacUse4.toFixed(2)} ตัน/วัน<br>
+                PAC Use เฟส 1: ${pacuse1.toFixed(2)} ตัน/วัน<br>
+                PAC Use เฟส 2: ${pacuse2.toFixed(2)} ตัน/วัน<br>
+                PAC Use เฟส 3: ${pacuse3.toFixed(2)} ตัน/วัน<br>
+                PAC Use เฟส 4: ${pacuse4.toFixed(2)} ตัน/วัน<br><br>
+                การรับ PAC ลง Tank A+B: ${pacincome_ab.toFixed(2)} ตัน<br>
+                การรับ PAC ลง Tank C+D: ${pacincome_cd.toFixed(2)} ตัน<br>
             `;
         }
     </script>
