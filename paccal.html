@@ -114,8 +114,8 @@
             const tankcd = tankC_ton + tankD_ton;
 
             // Calculate PAC Income
-            const pacincome_ab = 60 - tankab + (12 * pacuse1 * 0.5) + (12 * pacuse2 * 0.5);
-            const pacincome_cd = 60 - tankcd + (12 * pacuse3 * 0.5) + (12 * pacuse4 * 0.5);
+            const pacincome_ab = 60 - tankab + (pacuse1 * 0.5) + (pacuse2 * 0.5);
+            const pacincome_cd = 60 - tankcd + (pacuse3 * 0.5) + (pacuse4 * 0.5);
 
             // Display results
             const resultDiv = document.getElementById('result');
