@@ -14,23 +14,22 @@
         form {
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 10px; /* ลดช่องว่างระหว่างกลุ่มข้อมูล */
         }
 
         .input-group {
             display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
+            flex-direction: column; /* จัดเรียงข้อมูลเป็นแนวตั้ง */
+            gap: 5px; /* ลดช่องว่างระหว่างป้ายชื่อและฟิลด์ป้อนข้อมูล */
         }
 
-        .input-group label {
-            width: 100px;
+        label {
+            margin-bottom: 2px; /* ลดช่องว่างใต้ป้ายชื่อ */
         }
 
-        .input-group input {
-            flex: 1;
-            max-width: 150px;
-            padding: 2px; /* ลด padding ของ input เพื่อลดระยะห่าง */
+        input {
+            padding: 2px; /* ลด padding ของ input เพื่อให้ระยะห่างลดลง */
+            max-width: 200px;
         }
 
         button {
