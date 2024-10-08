@@ -12,16 +12,15 @@
             padding: 0;
             height: 100vh;
             display: flex;
-            justify-content: center;
-            align-items: center;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: flex-start;
         }
 
         form {
             display: flex;
             flex-direction: column;
             gap: 8px; /* ลดช่องว่างระหว่างกลุ่มข้อมูล */
-            height: 95%; /* กำหนดความสูงให้พอดีกับหน้าจอ */
-            max-height: 720px;
             padding: 10px;
             box-sizing: border-box;
             border: 1px solid #ccc;
@@ -34,13 +33,12 @@
             display: flex;
             flex-direction: row; /* จัดเรียงชื่อและช่องป้อนข้อมูลให้อยู่ในบรรทัดเดียวกัน */
             align-items: center;
-            justify-content: space-between;
             gap: 10px;
             font-size: 12px; /* ลดขนาดตัวอักษร */
         }
 
         label {
-            margin-right: 10px; /* เพิ่มระยะห่างระหว่าง label กับ input */
+            margin-right: 10px;
         }
 
         input {
@@ -50,7 +48,6 @@
         }
 
         button {
-            align-self: flex-start;
             padding: 5px 10px;
             font-size: 12px; /* ลดขนาดตัวอักษร */
         }
