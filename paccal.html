@@ -160,13 +160,11 @@
             const tankab = tankA_ton + tankB_ton;
             const tankcd = tankC_ton + tankD_ton;
 
-            // Calculate PAC Income (modified calculation)
-            const pacincome_ab = pacuse1 + pacuse2;
-            const pacincome_cd = pacuse3 + pacuse4;
+            // Calculate PAC Car trips
+            const totalPacUse = pacuse1 + pacuse2 + pacuse3 + pacuse4;
 
-            // Calculate number of PAC delivery trips
-            const pac_car1 = Math.floor((120 - tankab - tankcd) * 0.8 / 15);
-            const pac_car2 = Math.floor((pacincome_ab + pacincome_cd) / 15);
+            const pac_car1 = Math.floor(((120 - tankab - tankcd) + (totalPacUse * 0.25)) / 15);
+            const pac_car2 = Math.floor((((120 - tankab - tankcd) + totalPacUse) / 15) - pac_car1);
 
             // Display results
             const resultDiv = document.getElementById('result');
@@ -175,8 +173,6 @@
                 PAC Use เฟส 2: ${pacuse2.toFixed(2)} ตัน/วัน<br>
                 PAC Use เฟส 3: ${pacuse3.toFixed(2)} ตัน/วัน<br>
                 PAC Use เฟส 4: ${pacuse4.toFixed(2)} ตัน/วัน<br><br>
-                การรับ PAC ลง Tank A+B: ${pacincome_ab.toFixed(2)} ตัน<br>
-                การรับ PAC ลง Tank C+D: ${pacincome_cd.toFixed(2)} ตัน<br><br>
                 เที่ยวแรก ก่อนเที่ยง (pac_car1): ${pac_car1} เที่ยว<br>
                 จำนวนเที่ยวที่ต้องมาส่ง PAC (pac_car2): ${pac_car2} เที่ยว<br>
             `;
