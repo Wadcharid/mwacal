@@ -32,19 +32,21 @@
 
         .input-group {
             display: flex;
-            flex-direction: column; /* จัดเรียงข้อมูลเป็นแนวตั้ง */
-            gap: 5px;
+            flex-direction: row; /* จัดเรียงชื่อและช่องป้อนข้อมูลให้อยู่ในบรรทัดเดียวกัน */
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
             font-size: 12px; /* ลดขนาดตัวอักษร */
         }
 
         label {
-            margin-bottom: 2px;
+            margin-right: 10px; /* เพิ่มระยะห่างระหว่าง label กับ input */
         }
 
         input {
-            padding: 2px; /* ลด padding ของ input เพื่อให้ระยะห่างลดลง */
-            max-width: 100%;
-            font-size: 12px; /* ลดขนาดตัวอักษร */
+            padding: 2px;
+            max-width: 120px; /* ปรับความกว้างของ input ให้เล็กลง */
+            font-size: 12px;
         }
 
         button {
@@ -72,10 +74,16 @@
         <div class="input-group">
             <label for="tankA">Tank A:</label>
             <input type="number" id="tankA" required>
+        </div>
+        <div class="input-group">
             <label for="tankB">Tank B:</label>
             <input type="number" id="tankB" required>
+        </div>
+        <div class="input-group">
             <label for="tankC">Tank C:</label>
             <input type="number" id="tankC" required>
+        </div>
+        <div class="input-group">
             <label for="tankD">Tank D:</label>
             <input type="number" id="tankD" required>
         </div>
@@ -84,10 +92,16 @@
         <div class="input-group">
             <label for="rw1">RW1:</label>
             <input type="number" id="rw1" required>
+        </div>
+        <div class="input-group">
             <label for="rw2">RW2:</label>
             <input type="number" id="rw2" required>
+        </div>
+        <div class="input-group">
             <label for="rw3">RW3:</label>
             <input type="number" id="rw3" required>
+        </div>
+        <div class="input-group">
             <label for="rw4">RW4:</label>
             <input type="number" id="rw4" required>
         </div>
@@ -96,10 +110,16 @@
         <div class="input-group">
             <label for="pacdose1">เฟส 1:</label>
             <input type="number" id="pacdose1" required>
+        </div>
+        <div class="input-group">
             <label for="pacdose2">เฟส 2:</label>
             <input type="number" id="pacdose2" required>
+        </div>
+        <div class="input-group">
             <label for="pacdose3">เฟส 3:</label>
             <input type="number" id="pacdose3" required>
+        </div>
+        <div class="input-group">
             <label for="pacdose4">เฟส 4:</label>
             <input type="number" id="pacdose4" required>
         </div>
