@@ -10,7 +10,7 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            height: 100vh; /* ความสูงของหน้าจอ */
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -19,11 +19,10 @@
         form {
             display: flex;
             flex-direction: column;
-            gap: 10px; /* ลดช่องว่างระหว่างกลุ่มข้อมูล */
+            gap: 8px; /* ลดช่องว่างระหว่างกลุ่มข้อมูล */
             height: 95%; /* กำหนดความสูงให้พอดีกับหน้าจอ */
-            max-height: 720px; /* ความสูงสูงสุด 720px */
-            overflow-y: auto; /* หากยาวเกินหน้าจอให้มีการ scroll */
-            padding: 20px;
+            max-height: 720px;
+            padding: 10px;
             box-sizing: border-box;
             border: 1px solid #ccc;
             background-color: #f9f9f9;
@@ -34,25 +33,29 @@
         .input-group {
             display: flex;
             flex-direction: column; /* จัดเรียงข้อมูลเป็นแนวตั้ง */
-            gap: 5px; /* ลดช่องว่างระหว่างป้ายชื่อและฟิลด์ป้อนข้อมูล */
+            gap: 5px;
+            font-size: 12px; /* ลดขนาดตัวอักษร */
         }
 
         label {
-            margin-bottom: 2px; /* ลดช่องว่างใต้ป้ายชื่อ */
+            margin-bottom: 2px;
         }
 
         input {
             padding: 2px; /* ลด padding ของ input เพื่อให้ระยะห่างลดลง */
             max-width: 100%;
+            font-size: 12px; /* ลดขนาดตัวอักษร */
         }
 
         button {
             align-self: flex-start;
-            padding: 10px 15px;
+            padding: 5px 10px;
+            font-size: 12px; /* ลดขนาดตัวอักษร */
         }
 
         .result {
-            margin-top: 20px;
+            margin-top: 10px;
+            font-size: 12px; /* ลดขนาดตัวอักษรในผลลัพธ์ */
             font-weight: bold;
         }
     </style>
