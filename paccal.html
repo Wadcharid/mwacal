@@ -73,6 +73,10 @@
         th {
             background-color: #f2f2f2;
         }
+
+        td.bold {
+            font-weight: bold;
+        }
     </style>
 </head>
 
@@ -80,7 +84,7 @@
     <form id="pacForm">
         <div class="input-group">
             <label for="date">วันที่:</label>
-            <input type="date" id="date" required>
+            <input type="date" id="date">
         </div>
 
         <h3>Stock PAC ล่าสุด (m<sup>3</sup>)</h3>
@@ -144,11 +148,12 @@
         <table id="resultTable">
             <thead>
                 <tr>
-                    <th>วัน</th>
-                    <th>ปริมาณ PAC คงเหลือ (ตัน)</th>
-                    <th>จำนวนส่ง PAC ก่อนเที่ยง (เที่ยว)</th>
-                    <th>จำนวนส่ง PAC หลังเที่ยง (เที่ยว)</th>
-                    <th>รวมจำนวนเที่ยว</th>
+                    <th>Stock คงเหลือ (ตัน)</th>
+                    <th>การใช้ PAC รวม (ตัน)</th>
+                    <th>จำนวนเที่ยวรถก่อนเที่ยง (เที่ยว)</th>
+                    <th>จำนวนเที่ยวรถหลังเที่ยง (เที่ยว)</th>
+                    <th><b>จำนวนเที่ยวรถรวม (เที่ยว)</b></th>
+                    <th>Stock คงเหลือสิ้นสุดวัน (ตัน)</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -156,6 +161,11 @@
     </div>
 
     <script>
+        document.getElementById('pacForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            calculatePAC();
+        });
+
         function calculatePAC() {
             // Get input values
             const tankA = parseFloat(document.getElementById('tankA').value);
@@ -194,6 +204,10 @@
             const resultTableBody = document.querySelector('#resultTable tbody');
             resultTableBody.innerHTML = ''; // Clear previous results
 
+            // Get input date
+            const inputDate = document.getElementById('date').value;
+            let startDate = inputDate ? new Date(inputDate) : null;
+
             // Loop for 10 days calculation
             for (let day = 1; day <= 10; day++) {
                 // Calculate number of PAC car trips for the day
@@ -204,17 +218,25 @@
                 const totalTrips = pac_car1 + pac_car2;
 
                 // Update PAC stock for the next day
-                pacstock1 = pacstock1 - totalPacUse + (pac_car1 * 15) + (pac_car2 * 15);
+                const pacstock2 = pacstock1 - totalPacUse + (pac_car1 * 15) + (pac_car2 * 15);
+
+                // Format date
+                let dateString = inputDate ? startDate.toLocaleDateString() : `วันที่ ${day}`;
+                if (startDate) startDate.setDate(startDate.getDate() + 1); // Increment date if applicable
 
                 // Add row to the table
                 const row = `<tr>
-                    <td>วันที่ ${day}</td>
                     <td>${pacstock1.toFixed(2)} ตัน</td>
+                    <td>${totalPacUse.toFixed(2)} ตัน</td>
                     <td>${pac_car1} เที่ยว</td>
                     <td>${pac_car2} เที่ยว</td>
-                    <td>${totalTrips} เที่ยว</td>
+                    <td class="bold">${totalTrips} เที่ยว</td>
+                    <td>${pacstock2.toFixed(2)} ตัน</td>
                 </tr>`;
                 resultTableBody.insertAdjacentHTML('beforeend', row);
+
+                // Update for the next iteration
+                pacstock1 = pacstock2;
             }
         }
     </script>
