@@ -20,7 +20,7 @@
         form {
             display: flex;
             flex-direction: column;
-            gap: 8px; /* ลดช่องว่างระหว่างกลุ่มข้อมูล */
+            gap: 8px;
             padding: 10px;
             box-sizing: border-box;
             border: 1px solid #ccc;
@@ -31,10 +31,10 @@
 
         .input-group {
             display: flex;
-            flex-direction: row; /* จัดเรียงชื่อและช่องป้อนข้อมูลให้อยู่ในบรรทัดเดียวกัน */
+            flex-direction: row;
             align-items: center;
             gap: 10px;
-            font-size: 12px; /* ลดขนาดตัวอักษร */
+            font-size: 12px;
         }
 
         label {
@@ -43,19 +43,35 @@
 
         input {
             padding: 2px;
-            max-width: 120px; /* ปรับความกว้างของ input ให้เล็กลง */
+            max-width: 120px;
             font-size: 12px;
         }
 
         button {
             padding: 5px 10px;
-            font-size: 12px; /* ลดขนาดตัวอักษร */
+            font-size: 12px;
         }
 
         .result {
             margin-top: 10px;
-            font-size: 12px; /* ลดขนาดตัวอักษรในผลลัพธ์ */
+            font-size: 12px;
             font-weight: bold;
+        }
+
+        table {
+            margin-top: 10px;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
         }
     </style>
 </head>
@@ -124,7 +140,19 @@
         <button type="button" onclick="calculatePAC()">คำนวณการใช้ PAC และการรับ PAC</button>
     </form>
 
-    <div class="result" id="result"></div>
+    <div class="result">
+        <table id="resultTable">
+            <thead>
+                <tr>
+                    <th>วัน</th>
+                    <th>ปริมาณ PAC คงเหลือ (ตัน)</th>
+                    <th>จำนวนส่ง PAC ก่อนเที่ยง (เที่ยว)</th>
+                    <th>จำนวนส่ง PAC หลังเที่ยง (เที่ยว)</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
 
     <script>
         function calculatePAC() {
@@ -150,32 +178,39 @@
             const pacuse3 = (pacdose3 * rw3 * 3600 * 24) / 1000 / 1000 / 0.35;
             const pacuse4 = (pacdose4 * rw4 * 3600 * 24) / 1000 / 1000 / 0.35;
 
+            // Total PAC use per day
+            const totalPacUse = pacuse1 + pacuse2 + pacuse3 + pacuse4;
+
             // Convert Tank A, B, C, D from m3 to tons
             const tankA_ton = tankA * 1.19;
             const tankB_ton = tankB * 1.19;
             const tankC_ton = tankC * 1.19;
             const tankD_ton = tankD * 1.19;
 
-            // Calculate Tank A+B and Tank C+D in tons
-            const tankab = tankA_ton + tankB_ton;
-            const tankcd = tankC_ton + tankD_ton;
+            // Calculate total stock at 00:00 (Day 1)
+            let pacstock1 = tankA_ton + tankB_ton + tankC_ton + tankD_ton;
 
-            // Calculate PAC Car trips
-            const totalPacUse = pacuse1 + pacuse2 + pacuse3 + pacuse4;
+            const resultTableBody = document.querySelector('#resultTable tbody');
+            resultTableBody.innerHTML = ''; // Clear previous results
 
-            const pac_car1 = Math.floor(((110 - tankab - tankcd) + (totalPacUse * 0.25)) / 15);
-            const pac_car2 = Math.floor((((110 - tankab - tankcd) + totalPacUse) / 15) - pac_car1);
+            // Loop for 10 days calculation
+            for (let day = 1; day <= 10; day++) {
+                // Calculate number of PAC car trips for the day
+                const pac_car1 = Math.floor(((110 - pacstock1) + (totalPacUse * 0.25)) / 15);
+                const pac_car2 = Math.floor((((110 - pacstock1) + totalPacUse) / 15) - pac_car1);
 
-            // Display results
-            const resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = `
-                PAC Use เฟส 1: ${pacuse1.toFixed(2)} ตัน/วัน<br>
-                PAC Use เฟส 2: ${pacuse2.toFixed(2)} ตัน/วัน<br>
-                PAC Use เฟส 3: ${pacuse3.toFixed(2)} ตัน/วัน<br>
-                PAC Use เฟส 4: ${pacuse4.toFixed(2)} ตัน/วัน<br><br>
-                จำนวนส่ง PAC ก่อนเที่ยง: ${pac_car1} เที่ยว<br>
-                จำนวนส่ง PAC หลังเที่ยง: ${pac_car2} เที่ยว<br>
-            `;
+                // Update PAC stock for the next day
+                pacstock1 = pacstock1 - totalPacUse + (pac_car1 * 15) + (pac_car2 * 15);
+
+                // Add row to the table
+                const row = `<tr>
+                    <td>วันที่ ${day}</td>
+                    <td>${pacstock1.toFixed(2)} ตัน</td>
+                    <td>${pac_car1} เที่ยว</td>
+                    <td>${pac_car2} เที่ยว</td>
+                </tr>`;
+                resultTableBody.insertAdjacentHTML('beforeend', row);
+            }
         }
     </script>
 </body>
