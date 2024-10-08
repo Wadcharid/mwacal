@@ -8,13 +8,27 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            margin: 0;
+            padding: 0;
+            height: 100vh; /* ความสูงของหน้าจอ */
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         form {
             display: flex;
             flex-direction: column;
             gap: 10px; /* ลดช่องว่างระหว่างกลุ่มข้อมูล */
+            height: 95%; /* กำหนดความสูงให้พอดีกับหน้าจอ */
+            max-height: 720px; /* ความสูงสูงสุด 720px */
+            overflow-y: auto; /* หากยาวเกินหน้าจอให้มีการ scroll */
+            padding: 20px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            width: 100%;
+            max-width: 500px;
         }
 
         .input-group {
@@ -29,7 +43,7 @@
 
         input {
             padding: 2px; /* ลด padding ของ input เพื่อให้ระยะห่างลดลง */
-            max-width: 200px;
+            max-width: 100%;
         }
 
         button {
@@ -45,7 +59,6 @@
 </head>
 
 <body>
-    <h1>คำนวณการใช้ PAC และการรับ PAC</h1>
     <form id="pacForm">
         <div class="input-group">
             <label for="date">วันที่:</label>
