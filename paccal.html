@@ -47,6 +47,10 @@
             font-size: 12px;
         }
 
+        input.invalid {
+            border: 1px solid red;
+        }
+
         button {
             padding: 5px 10px;
             font-size: 12px;
@@ -56,6 +60,7 @@
             margin-top: 10px;
             font-size: 12px;
             font-weight: bold;
+            display: none; /* ซ่อนผลลัพธ์ก่อนการคำนวณ */
         }
 
         table {
@@ -72,6 +77,10 @@
 
         th {
             background-color: #f2f2f2;
+        }
+
+        th.highlight {
+            background-color: #ffa; /* สีแตกต่างสำหรับหัวคอลัมน์จำนวนเที่ยวรถรวม */
         }
 
         td.bold {
@@ -149,12 +158,12 @@
             <thead>
                 <tr>
                     <th>วันที่</th>
-                    <th>Stock คงเหลือ (ตัน)</th>
-                    <th>การใช้ PAC รวม (ตัน)</th>
-                    <th>จำนวนเที่ยวรถก่อนเที่ยง (เที่ยว)</th>
-                    <th>จำนวนเที่ยวรถหลังเที่ยง (เที่ยว)</th>
-                    <th><b>จำนวนเที่ยวรถรวม (เที่ยว)</b></th>
-                    <th>Stock คงเหลือสิ้นสุดวัน (ตัน)</th>
+                    <th>Stock คงเหลือ</th>
+                    <th>การใช้ PAC รวม</th>
+                    <th>จำนวนเที่ยวรถก่อนเที่ยง</th>
+                    <th>จำนวนเที่ยวรถหลังเที่ยง</th>
+                    <th class="highlight">จำนวนเที่ยวรถรวม</th>
+                    <th>Stock คงเหลือสิ้นสุดวัน</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -162,12 +171,33 @@
     </div>
 
     <script>
-        document.getElementById('pacForm').addEventListener('submit', function (event) {
-            event.preventDefault();
-            calculatePAC();
+        // ตรวจสอบฟอร์มทุกช่องเพื่อให้สามารถกด Enter ได้
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    calculatePAC();
+                }
+            });
         });
 
+        // ตรวจสอบว่าทุกช่องถูกกรอกครบ
+        function validateForm() {
+            let isValid = true;
+            document.querySelectorAll('input[required]').forEach(input => {
+                if (!input.value) {
+                    input.classList.add('invalid');
+                    isValid = false;
+                } else {
+                    input.classList.remove('invalid');
+                }
+            });
+            return isValid;
+        }
+
         function calculatePAC() {
+            if (!validateForm()) return; // ถ้าฟอร์มไม่ถูกต้อง หยุดการทำงาน
+
             // Get input values
             const tankA = parseFloat(document.getElementById('tankA').value);
             const tankB = parseFloat(document.getElementById('tankB').value);
@@ -205,6 +235,9 @@
             const resultTableBody = document.querySelector('#resultTable tbody');
             resultTableBody.innerHTML = ''; // Clear previous results
 
+            const resultSection = document.querySelector('.result');
+            resultSection.style.display = 'block'; // แสดงตารางผลลัพธ์
+
             // Get input date
             const inputDate = document.getElementById('date').value;
             let startDate = inputDate ? new Date(inputDate) : null;
@@ -228,12 +261,12 @@
                 // Add row to the table
                 const row = `<tr>
                     <td>${dateString}</td>
-                    <td>${pacstock1.toFixed(2)} ตัน</td>
-                    <td>${totalPacUse.toFixed(2)} ตัน</td>
-                    <td>${pac_car1} เที่ยว</td>
-                    <td>${pac_car2} เที่ยว</td>
-                    <td class="bold">${totalTrips} เที่ยว</td>
-                    <td>${pacstock2.toFixed(2)} ตัน</td>
+                    <td>${pacstock1.toFixed(2)}</td>
+                    <td>${totalPacUse.toFixed(2)}</td>
+                    <td>${pac_car1}</td>
+                    <td>${pac_car2}</td>
+                    <td class="bold">${totalTrips}</td>
+                    <td>${pacstock2.toFixed(2)}</td>
                 </tr>`;
                 resultTableBody.insertAdjacentHTML('beforeend', row);
 
