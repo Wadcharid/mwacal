@@ -148,6 +148,7 @@
         <table id="resultTable">
             <thead>
                 <tr>
+                    <th>วันที่</th>
                     <th>Stock คงเหลือ (ตัน)</th>
                     <th>การใช้ PAC รวม (ตัน)</th>
                     <th>จำนวนเที่ยวรถก่อนเที่ยง (เที่ยว)</th>
@@ -226,6 +227,7 @@
 
                 // Add row to the table
                 const row = `<tr>
+                    <td>${dateString}</td>
                     <td>${pacstock1.toFixed(2)} ตัน</td>
                     <td>${totalPacUse.toFixed(2)} ตัน</td>
                     <td>${pac_car1} เที่ยว</td>
