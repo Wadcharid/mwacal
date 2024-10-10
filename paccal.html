@@ -90,31 +90,31 @@
 
         /* สีพื้นหลังของวันในสัปดาห์ตามสีประจำวันในประเทศไทย */
         .sunday {
-            background-color: #FFCCCC; /* สีแดงอ่อน */
+            background-color: #FF9999; /* สีแดง */
         }
 
         .monday {
-            background-color: #FFFFCC; /* สีเหลืองอ่อน */
+            background-color: #FFFF99; /* สีเหลือง */
         }
 
         .tuesday {
-            background-color: #FFCCE5; /* สีชมพูอ่อน */
+            background-color: #FFCCFF; /* สีชมพู */
         }
 
         .wednesday {
-            background-color: #CCFFCC; /* สีเขียวอ่อน */
+            background-color: #99FF99; /* สีเขียว */
         }
 
         .thursday {
-            background-color: #FFE5CC; /* สีส้มอ่อน */
+            background-color: #FFCC99; /* สีส้ม */
         }
 
         .friday {
-            background-color: #CCE5FF; /* สีฟ้าอ่อน */
+            background-color: #99CCFF; /* สีฟ้า */
         }
 
         .saturday {
-            background-color: #E5CCFF; /* สีม่วงอ่อน */
+            background-color: #CC99FF; /* สีม่วง */
         }
     </style>
 </head>
@@ -230,19 +230,19 @@
         function getDayClass(day) {
             switch (day) {
                 case 0:
-                    return 'sunday';
+                    return 'sunday';    // วันอาทิตย์
                 case 1:
-                    return 'monday';
+                    return 'monday';    // วันจันทร์
                 case 2:
-                    return 'tuesday';
+                    return 'tuesday';   // วันอังคาร
                 case 3:
-                    return 'wednesday';
+                    return 'wednesday'; // วันพุธ
                 case 4:
-                    return 'thursday';
+                    return 'thursday';  // วันพฤหัสบดี
                 case 5:
-                    return 'friday';
+                    return 'friday';    // วันศุกร์
                 case 6:
-                    return 'saturday';
+                    return 'saturday';  // วันเสาร์
                 default:
                     return '';
             }
