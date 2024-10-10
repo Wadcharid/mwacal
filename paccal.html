@@ -69,7 +69,8 @@
             width: 100%;
         }
 
-        th, td {
+        th,
+        td {
             border: 1px solid #ccc;
             padding: 8px;
             text-align: center;
@@ -87,14 +88,34 @@
             font-weight: bold;
         }
 
-        /* สีพื้นหลังของวันในสัปดาห์ */
-        .monday { background-color: #FFCCCC; }
-        .tuesday { background-color: #FFDD99; }
-        .wednesday { background-color: #FFFF99; }
-        .thursday { background-color: #CCFFCC; }
-        .friday { background-color: #99CCFF; }
-        .saturday { background-color: #CCCCFF; }
-        .sunday { background-color: #FF9999; }
+        /* สีพื้นหลังของวันในสัปดาห์ตามสีประจำวันในประเทศไทย */
+        .sunday {
+            background-color: #FFCCCC; /* สีแดงอ่อน */
+        }
+
+        .monday {
+            background-color: #FFFFCC; /* สีเหลืองอ่อน */
+        }
+
+        .tuesday {
+            background-color: #FFCCE5; /* สีชมพูอ่อน */
+        }
+
+        .wednesday {
+            background-color: #CCFFCC; /* สีเขียวอ่อน */
+        }
+
+        .thursday {
+            background-color: #FFE5CC; /* สีส้มอ่อน */
+        }
+
+        .friday {
+            background-color: #CCE5FF; /* สีฟ้าอ่อน */
+        }
+
+        .saturday {
+            background-color: #E5CCFF; /* สีม่วงอ่อน */
+        }
     </style>
 </head>
 
@@ -208,14 +229,22 @@
         // ฟังก์ชันเพื่อกำหนดสีพื้นหลังตามวันในสัปดาห์
         function getDayClass(day) {
             switch (day) {
-                case 0: return 'sunday';
-                case 1: return 'monday';
-                case 2: return 'tuesday';
-                case 3: return 'wednesday';
-                case 4: return 'thursday';
-                case 5: return 'friday';
-                case 6: return 'saturday';
-                default: return '';
+                case 0:
+                    return 'sunday';
+                case 1:
+                    return 'monday';
+                case 2:
+                    return 'tuesday';
+                case 3:
+                    return 'wednesday';
+                case 4:
+                    return 'thursday';
+                case 5:
+                    return 'friday';
+                case 6:
+                    return 'saturday';
+                default:
+                    return '';
             }
         }
 
@@ -270,7 +299,7 @@
 
                 const pacstock2 = pacstock1 - totalPacUse + (pac_car1 * 15) + (pac_car2 * 15);
 
-                let dateString = inputDate ? startDate.toLocaleDateString() : `วันที่ ${day}`;
+                let dateString = inputDate ? startDate.toLocaleDateString('th-TH') : `วันที่ ${day}`;
                 let dayClass = inputDate ? getDayClass(startDate.getDay()) : '';
 
                 if (startDate) startDate.setDate(startDate.getDate() + 1);
