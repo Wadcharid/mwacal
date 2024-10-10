@@ -60,7 +60,7 @@
             margin-top: 10px;
             font-size: 12px;
             font-weight: bold;
-            display: none; /* ซ่อนผลลัพธ์ก่อนการคำนวณ */
+            display: none;
         }
 
         table {
@@ -80,12 +80,21 @@
         }
 
         th.highlight {
-            background-color: #ffa; /* สีแตกต่างสำหรับหัวคอลัมน์จำนวนเที่ยวรถรวม */
+            background-color: #ffa;
         }
 
         td.bold {
             font-weight: bold;
         }
+
+        /* สีพื้นหลังของวันในสัปดาห์ */
+        .monday { background-color: #FFCCCC; }
+        .tuesday { background-color: #FFDD99; }
+        .wednesday { background-color: #FFFF99; }
+        .thursday { background-color: #CCFFCC; }
+        .friday { background-color: #99CCFF; }
+        .saturday { background-color: #CCCCFF; }
+        .sunday { background-color: #FF9999; }
     </style>
 </head>
 
@@ -161,9 +170,9 @@
                     <th>วันที่</th>
                     <th>Stock คงเหลือ (ตัน)</th>
                     <th>การใช้ PAC รวม (ตัน)</th>
-                    <th>จำนวนเที่ยวรถ ก่อนเที่ยง (เที่ยว)</th>
-                    <th>จำนวนเที่ยวรถ หลังเที่ยง (เที่ยว)</th>
-                    <th class="highlight">จำนวนเที่ยวรถรวม (เที่ยว)</th>
+                    <th>จำนวนเที่ยวรถ ก่อนเที่ยง</th>
+                    <th>จำนวนเที่ยวรถ หลังเที่ยง</th>
+                    <th class="highlight">จำนวนเที่ยวรถรวม</th>
                     <th>Stock คงเหลือสิ้นสุดวัน (ตัน)</th>
                 </tr>
             </thead>
@@ -196,8 +205,22 @@
             return isValid;
         }
 
+        // ฟังก์ชันเพื่อกำหนดสีพื้นหลังตามวันในสัปดาห์
+        function getDayClass(day) {
+            switch (day) {
+                case 0: return 'sunday';
+                case 1: return 'monday';
+                case 2: return 'tuesday';
+                case 3: return 'wednesday';
+                case 4: return 'thursday';
+                case 5: return 'friday';
+                case 6: return 'saturday';
+                default: return '';
+            }
+        }
+
         function calculatePAC() {
-            if (!validateForm()) return; // ถ้าฟอร์มไม่ถูกต้อง หยุดการทำงาน
+            if (!validateForm()) return;
 
             // Get input values
             const tankA = parseFloat(document.getElementById('tankA').value);
@@ -221,47 +244,39 @@
             const pacuse3 = (pacdose3 * rw3 * 3600 * 24) / 1000 / 1000 / 0.35;
             const pacuse4 = (pacdose4 * rw4 * 3600 * 24) / 1000 / 1000 / 0.35;
 
-            // Total PAC use per day
             const totalPacUse = pacuse1 + pacuse2 + pacuse3 + pacuse4;
 
-            // Convert Tank A, B, C, D from m3 to tons
             const tankA_ton = tankA * 1.19;
             const tankB_ton = tankB * 1.19;
             const tankC_ton = tankC * 1.19;
             const tankD_ton = tankD * 1.19;
 
-            // Calculate total stock at 00:00 (Day 1)
             let pacstock1 = tankA_ton + tankB_ton + tankC_ton + tankD_ton;
 
             const resultTableBody = document.querySelector('#resultTable tbody');
-            resultTableBody.innerHTML = ''; // Clear previous results
+            resultTableBody.innerHTML = ''; // ล้างผลลัพธ์ก่อนหน้า
 
             const resultSection = document.querySelector('.result');
-            resultSection.style.display = 'block'; // แสดงตารางผลลัพธ์
+            resultSection.style.display = 'block'; // แสดงผลลัพธ์
 
-            // Get input date
             const inputDate = document.getElementById('date').value;
             let startDate = inputDate ? new Date(inputDate) : null;
 
-            // Loop for 10 days calculation
             for (let day = 1; day <= 10; day++) {
-                // Calculate number of PAC car trips for the day
                 const pac_car1 = Math.floor(((110 - pacstock1) + (totalPacUse * 0.25)) / 15);
                 const pac_car2 = Math.floor((((110 - pacstock1) + totalPacUse) / 15) - pac_car1);
 
-                // Calculate total trips for the day
                 const totalTrips = pac_car1 + pac_car2;
 
-                // Update PAC stock for the next day
                 const pacstock2 = pacstock1 - totalPacUse + (pac_car1 * 15) + (pac_car2 * 15);
 
-                // Format date
                 let dateString = inputDate ? startDate.toLocaleDateString() : `วันที่ ${day}`;
-                if (startDate) startDate.setDate(startDate.getDate() + 1); // Increment date if applicable
+                let dayClass = inputDate ? getDayClass(startDate.getDay()) : '';
 
-                // Add row to the table
+                if (startDate) startDate.setDate(startDate.getDate() + 1);
+
                 const row = `<tr>
-                    <td>${dateString}</td>
+                    <td class="${dayClass}">${dateString}</td>
                     <td>${pacstock1.toFixed(2)}</td>
                     <td>${totalPacUse.toFixed(2)}</td>
                     <td>${pac_car1}</td>
@@ -271,7 +286,6 @@
                 </tr>`;
                 resultTableBody.insertAdjacentHTML('beforeend', row);
 
-                // Update for the next iteration
                 pacstock1 = pacstock2;
             }
         }
