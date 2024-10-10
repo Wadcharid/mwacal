@@ -90,31 +90,31 @@
 
         /* สีพื้นหลังของวันในสัปดาห์ตามสีประจำวันในประเทศไทย */
         .sunday {
-            background-color: #FF9999; /* สีแดง */
+            background-color: #FF9999;
         }
 
         .monday {
-            background-color: #FFFF99; /* สีเหลือง */
+            background-color: #FFFF99;
         }
 
         .tuesday {
-            background-color: #FFCCFF; /* สีชมพู */
+            background-color: #FFCCFF;
         }
 
         .wednesday {
-            background-color: #99FF99; /* สีเขียว */
+            background-color: #99FF99;
         }
 
         .thursday {
-            background-color: #FFCC99; /* สีส้ม */
+            background-color: #FFCC99;
         }
 
         .friday {
-            background-color: #99CCFF; /* สีฟ้า */
+            background-color: #99CCFF;
         }
 
         .saturday {
-            background-color: #CC99FF; /* สีม่วง */
+            background-color: #CC99FF;
         }
     </style>
 </head>
@@ -179,6 +179,48 @@
         <div class="input-group">
             <label for="pacdose4">เฟส 4:</label>
             <input type="number" id="pacdose4" required>
+        </div>
+
+        <h3>บังคับจำนวนเที่ยวรถ (หลังเที่ยง) ตั้งแต่วันที่ 1 ถึง 10</h3>
+        <div class="input-group">
+            <label for="manualTrips1">วันที่ 1:</label>
+            <input type="number" id="manualTrips1">
+        </div>
+        <div class="input-group">
+            <label for="manualTrips2">วันที่ 2:</label>
+            <input type="number" id="manualTrips2">
+        </div>
+        <div class="input-group">
+            <label for="manualTrips3">วันที่ 3:</label>
+            <input type="number" id="manualTrips3">
+        </div>
+        <div class="input-group">
+            <label for="manualTrips4">วันที่ 4:</label>
+            <input type="number" id="manualTrips4">
+        </div>
+        <div class="input-group">
+            <label for="manualTrips5">วันที่ 5:</label>
+            <input type="number" id="manualTrips5">
+        </div>
+        <div class="input-group">
+            <label for="manualTrips6">วันที่ 6:</label>
+            <input type="number" id="manualTrips6">
+        </div>
+        <div class="input-group">
+            <label for="manualTrips7">วันที่ 7:</label>
+            <input type="number" id="manualTrips7">
+        </div>
+        <div class="input-group">
+            <label for="manualTrips8">วันที่ 8:</label>
+            <input type="number" id="manualTrips8">
+        </div>
+        <div class="input-group">
+            <label for="manualTrips9">วันที่ 9:</label>
+            <input type="number" id="manualTrips9">
+        </div>
+        <div class="input-group">
+            <label for="manualTrips10">วันที่ 10:</label>
+            <input type="number" id="manualTrips10">
         </div>
 
         <button type="button" onclick="calculatePAC()">คำนวณการใช้ PAC และการรับ PAC</button>
@@ -267,6 +309,13 @@
             const pacdose3 = parseFloat(document.getElementById('pacdose3').value);
             const pacdose4 = parseFloat(document.getElementById('pacdose4').value);
 
+            // Manual trips input
+            const manualTrips = [];
+            for (let i = 1; i <= 10; i++) {
+                const manualInput = parseFloat(document.getElementById('manualTrips' + i).value);
+                manualTrips.push(manualInput || null); // ถ้าไม่มีการป้อนจะเก็บค่า null
+            }
+
             // Calculate PAC Use for each phase
             const pacuse1 = (pacdose1 * rw1 * 3600 * 24) / 1000 / 1000 / 0.35;
             const pacuse2 = (pacdose2 * rw2 * 3600 * 24) / 1000 / 1000 / 0.35;
@@ -292,8 +341,14 @@
             let startDate = inputDate ? new Date(inputDate) : null;
 
             for (let day = 1; day <= 10; day++) {
-                const pac_car1 = Math.floor(((110 - pacstock1) + (totalPacUse * 0.25)) / 15);
-                const pac_car2 = Math.floor((((110 - pacstock1) + totalPacUse) / 15) - pac_car1);
+                let pac_car1 = Math.floor(((110 - pacstock1) + (totalPacUse * 0.25)) / 15);
+                let pac_car2 = Math.floor((((110 - pacstock1) + totalPacUse) / 15) - pac_car1);
+
+                // Check for manual trips input
+                if (manualTrips[day - 1] !== null) {
+                    pac_car1 = 0;
+                    pac_car2 = manualTrips[day - 1];
+                }
 
                 const totalTrips = pac_car1 + pac_car2;
 
