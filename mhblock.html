@@ -257,7 +257,7 @@ function calculatePulse(inputField) {
     if (inputField === 'flush_upflow' && rwFlow !== null && height !== null && flush !== null) {
         document.getElementById('flush_upflow').value = (((rwFlow * 3600 / 2) + ((height * 94 / 100 / flush) * 3600)) / 2370).toFixed(2);
     } else if (inputField === 'suction_upflow' && rwFlow !== null && height !== null && suction !== null) {
-        document.getElementById('suction_upflow').value = (((rwFlow * 3600 / 2) + ((height * 94 / 100 / suction) * 3600)) / 2370).toFixed(2);
+        document.getElementById('suction_upflow').value = (((rwFlow * 3600 / 2) - ((height * 94 / 100 / suction) * 3600)) / 2370).toFixed(2);
     }
 }
     
