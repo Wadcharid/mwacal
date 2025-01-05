@@ -148,20 +148,7 @@
     <button onclick="calculateSludge('drain')">Calculate</button>
 </div>
     
-<div class="block">
-    <h2>6. Pump Affinity Laws Calculation</h2>
-    <label for="rpm">Pump Speed (RPM):</label>
-    <input type="number" id="rpm" step="any">
-    <button onclick="calculatePump('rpm')">Calculate</button>
 
-    <label for="flow_rate">Flow Rate (m³/h):</label>
-    <input type="number" id="flow_rate" step="any">
-    <button onclick="calculatePump('flow_rate')">Calculate</button>
-
-    <label for="head">Head (meters):</label>
-    <input type="number" id="head" step="any">
-    <button onclick="calculatePump('head')">Calculate</button>
-</div>
     
 <script>
 // Alum Dosing Calculation
@@ -233,20 +220,7 @@ function calculateSludge(inputField) {
     }
 }
 
-// Pump Affinity Laws Calculation
-function calculatePump(inputField) {
-    const rpm = parseFloat(document.getElementById('rpm').value) || null;
-    const flowRate = parseFloat(document.getElementById('flow_rate').value) || null;
-    const head = parseFloat(document.getElementById('head').value) || null;
 
-    if (inputField === 'rpm' && flowRate !== null && head !== null) {
-        document.getElementById('rpm').value = ((flowRate / Math.sqrt(head)) * 1000).toFixed(2);
-    } else if (inputField === 'flow_rate' && rpm !== null && head !== null) {
-        document.getElementById('flow_rate').value = ((rpm / 1000) * Math.sqrt(head)).toFixed(2);
-    } else if (inputField === 'head' && rpm !== null && flowRate !== null) {
-        document.getElementById('head').value = Math.pow((flowRate / (rpm / 1000)), 2).toFixed(2);
-    }
-}
     
 </script>
 
