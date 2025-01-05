@@ -174,6 +174,30 @@
     <input type="number" id="suction_upflow" step="any">
     <button onclick="calculatePulse('suction_upflow')">Calculate</button>
 </div>
+
+<div class="block">
+    <h2>7. Alum Cost Calculation</h2>
+    <label for="alum_dose">Alum Dose (mg/L):</label>
+    <input type="number" id="alum_dose" step="any">
+    <button onclick="calculateAlumCost('dose')">Calculate</button>
+
+    <label for="rw_flow_cost">RW Flow (m³/s):</label>
+    <input type="number" id="rw_flow_cost" step="any">
+    <button onclick="calculateAlumCost('rw_flow')">Calculate</button>
+
+    <label for="alum_use">Alum Use (Tons/Day):</label>
+    <input type="number" id="alum_use" step="any">
+    <button onclick="calculateAlumCost('use')">Calculate</button>
+
+    <label for="price_per_ton">Price (Baht/Ton):</label>
+    <input type="number" id="price_per_ton" step="any">
+    <button onclick="calculateAlumCost('price')">Calculate</button>
+
+    <label for="alum_cost">Alum Use Cost (Baht/m³):</label>
+    <input type="number" id="alum_cost" step="any">
+    <button onclick="calculateAlumCost('cost')">Calculate</button>
+</div>
+
     
 <script>
 // Alum Dosing Calculation
@@ -260,6 +284,21 @@ function calculatePulse(inputField) {
         document.getElementById('suction_upflow').value = (((rwFlow * 3600 / 2) - ((height * 94 / 100 / suction) * 3600)) / 2370).toFixed(2);
     }
 }
+
+// Alum Cost Calculation
+function calculateAlumCost(inputField) {
+    const dose = parseFloat(document.getElementById('alum_dose').value) || null;
+    const rwFlow = parseFloat(document.getElementById('rw_flow_cost').value) || null;
+    const use = parseFloat(document.getElementById('alum_use').value) || null;
+    const price = parseFloat(document.getElementById('price_per_ton').value) || null;
+    const cost = parseFloat(document.getElementById('alum_cost').value) || null;
+
+    if (inputField === 'cost' && dose !== null && rwFlow !== null && price !== null) {
+        document.getElementById('alum_cost').value = ((dose * rwFlow * 3600 * 24 * 2) * price / (1000 * 1000 * rwFlow * 3600 * 24)).toFixed(4);
+    }
+    // Additional logic for other fields can be implemented as needed
+}
+
     
 </script>
 
