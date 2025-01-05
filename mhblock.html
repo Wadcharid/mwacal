@@ -293,14 +293,19 @@ function calculateAlumCost(action) {
     let alumUse = parseFloat(document.getElementById('alum_use').value) || 0;
     let alumCost = parseFloat(document.getElementById('alum_cost_per_m3').value) || 0;
 
+    console.log("Action:", action);
+    console.log("Alum Dose:", alumDose, "RW Flow:", rwFlow);
+
     if (action === 'alum_use' && alumDose > 0 && rwFlow > 0) {
         alumUse = (alumDose * rwFlow * 3600 * 24 * 2) / (1000 * 1000); // Tons/Day
         document.getElementById('alum_use').value = alumUse.toFixed(2);
+        console.log("Calculated Alum Use:", alumUse);
     }
 
     if (action === 'alum_cost' && alumUse > 0 && price > 0 && rwFlow > 0) {
         alumCost = (alumUse * price) / (rwFlow * 3600 * 24); // Baht/m³
         document.getElementById('alum_cost_per_m3').value = alumCost.toFixed(4);
+        console.log("Calculated Alum Cost:", alumCost);
     }
 }
 
