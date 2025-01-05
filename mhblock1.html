@@ -77,28 +77,29 @@
 <div class="block">
     <h2>1. Raw Water Flow Rate</h2>
     <label for="flow_m3s">Flow Rate (m³/s):</label>
-    <input type="number" id="flow_m3s" step="0.1" oninput="calculateFlowRate('m3s')">
+    <!-- เปลี่ยนเป็น onchange -->
+    <input type="number" id="flow_m3s" step="0.1" onchange="calculateFlowRate('m3s')">
 
     <label for="flow_m3h">Flow Rate (m³/h):</label>
-    <input type="number" id="flow_m3h" step="1.0" oninput="calculateFlowRate('m3h')">
+    <input type="number" id="flow_m3h" step="1" onchange="calculateFlowRate('m3h')">
 
     <label for="flow_m3day">Flow Rate (m³/day):</label>
-    <input type="number" id="flow_m3day" step="1.0" oninput="calculateFlowRate('m3day')">
+    <input type="number" id="flow_m3day" step="1" onchange="calculateFlowRate('m3day')">
 </div>
 
 <!-- 2. Alum Dosing Calculation -->
 <div class="block">
     <h2>2. Alum Dosing Calculation</h2>
     <label for="alum_dose">Dose (mg/L):</label>
-    <input type="number" id="alum_dose" step="any">
+    <input type="number" id="alum_dose" step="1.0">
     <button onclick="calculateAlum('dose')">Calculate</button>
 
     <label for="alum_rw_flow">Raw Water Flow (m³/s):</label>
-    <input type="number" id="alum_rw_flow" step="any">
+    <input type="number" id="alum_rw_flow" step="0.1">
     <button onclick="calculateAlum('rw_flow')">Calculate</button>
 
     <label for="alum_flow">Alum Flow (litres/hour):</label>
-    <input type="number" id="alum_flow" step="any">
+    <input type="number" id="alum_flow" step="1.0">
     <button onclick="calculateAlum('flow')">Calculate</button>
     <p id="alum_flow_lmin">Alum Flow: <span>0</span> litres/min</p>
 </div>
@@ -107,15 +108,15 @@
 <div class="block">
     <h2>3. PAC Dosing Calculation</h2>
     <label for="pac_dose">Dose (mg/L):</label>
-    <input type="number" id="pac_dose" step="any">
+    <input type="number" id="pac_dose" step="1.0">
     <button onclick="calculatePAC('dose')">Calculate</button>
 
     <label for="pac_rw_flow">Raw Water Flow (m³/s):</label>
-    <input type="number" id="pac_rw_flow" step="any">
+    <input type="number" id="pac_rw_flow" step="0.1">
     <button onclick="calculatePAC('rw_flow')">Calculate</button>
 
     <label for="pac_flow">PAC Flow (litres/hour):</label>
-    <input type="number" id="pac_flow" step="any">
+    <input type="number" id="pac_flow" step="1.0">
     <button onclick="calculatePAC('flow')">Calculate</button>
     <p id="pac_flow_lmin">PAC Flow: <span>0</span> litres/min</p>
 </div>
@@ -124,15 +125,15 @@
 <div class="block">
     <h2>4. Chlorine Dosing Calculation</h2>
     <label for="chlorine_dose">Dose (mg/L):</label>
-    <input type="number" id="chlorine_dose" step="any">
+    <input type="number" id="chlorine_dose" step="0.1">
     <button onclick="calculateChlorine('dose')">Calculate</button>
 
     <label for="chlorine_rw_flow">Raw Water Flow (m³/s):</label>
-    <input type="number" id="chlorine_rw_flow" step="any">
+    <input type="number" id="chlorine_rw_flow" step="0.1">
     <button onclick="calculateChlorine('rw_flow')">Calculate</button>
 
     <label for="chlorine_flow">Cl2 Flow (kg/hour):</label>
-    <input type="number" id="chlorine_flow" step="any">
+    <input type="number" id="chlorine_flow" step="0.1">
     <button onclick="calculateChlorine('flow')">Calculate</button>
     <p id="chlorine_flow_kg_day">Cl2 Flow: <span>0</span> kg/day</p>
 </div>
@@ -236,22 +237,22 @@ function calculateFlowRate(unit) {
     if (unit === 'm3s') {
         flow_h   = flow_s * 3600;
         flow_day = flow_s * 86400;
-    } 
+    }
     // กรณีแก้ไขที่ m³/h
     else if (unit === 'm3h') {
         flow_s   = flow_h / 3600;
         flow_day = flow_h * 24;
-    } 
+    }
     // กรณีแก้ไขที่ m³/day
     else if (unit === 'm3day') {
         flow_s = flow_day / 86400;
         flow_h = flow_day / 24;
     }
 
-    // แสดงผลกลับไปที่ input
-    document.getElementById('flow_m3s').value   = flow_s;
-    document.getElementById('flow_m3h').value   = flow_h.toFixed(0);
-    document.getElementById('flow_m3day').value = flow_day.toFixed(0);
+    // ใส่ค่ากลับ
+    document.getElementById('flow_m3s').value   = flow_s.toFixed(1);  // แสดงทศนิยม 1 ตำแหน่ง
+    document.getElementById('flow_m3h').value   = flow_h.toFixed(0);  // เป็นจำนวนเต็ม
+    document.getElementById('flow_m3day').value = flow_day.toFixed(0); 
 }
 
 /* --------------------------------------------------------------------------------
@@ -264,15 +265,15 @@ function calculateAlum(inputField) {
 
     // คำนวณหา Dose
     if (inputField === 'dose' && rwFlow !== null && flow !== null) {
-        document.getElementById('alum_dose').value = ((flow * 1.33 * 0.5 * 1000) / (rwFlow * 3600)).toFixed(2);
+        document.getElementById('alum_dose').value = ((flow * 1.33 * 0.5 * 1000) / (rwFlow * 3600)).toFixed(1);
     }
     // คำนวณหา Raw Water Flow
     else if (inputField === 'rw_flow' && dose !== null && flow !== null) {
-        document.getElementById('alum_rw_flow').value = ((flow * 1.33 * 0.5 * 1000) / (dose * 3600)).toFixed(5);
+        document.getElementById('alum_rw_flow').value = ((flow * 1.33 * 0.5 * 1000) / (dose * 3600)).toFixed(1);
     }
     // คำนวณหา Alum Flow
     else if (inputField === 'flow' && dose !== null && rwFlow !== null) {
-        document.getElementById('alum_flow').value = ((dose * rwFlow * 3600) / (1.33 * 0.5 * 1000)).toFixed(2);
+        document.getElementById('alum_flow').value = ((dose * rwFlow * 3600) / (1.33 * 0.5 * 1000)).toFixed(0);
     }
 
     // อัปเดตค่า L/min
@@ -290,11 +291,11 @@ function calculatePAC(inputField) {
     const flow   = parseFloat(document.getElementById('pac_flow').value)    || null;
 
     if (inputField === 'dose' && rwFlow !== null && flow !== null) {
-        document.getElementById('pac_dose').value = ((flow * 1.19 * 0.35 * 1000) / (rwFlow * 3600)).toFixed(2);
+        document.getElementById('pac_dose').value = ((flow * 1.19 * 0.35 * 1000) / (rwFlow * 3600)).toFixed(1);
     } else if (inputField === 'rw_flow' && dose !== null && flow !== null) {
-        document.getElementById('pac_rw_flow').value = ((flow * 1.19 * 0.35 * 1000) / (dose * 3600)).toFixed(5);
+        document.getElementById('pac_rw_flow').value = ((flow * 1.19 * 0.35 * 1000) / (dose * 3600)).toFixed(1);
     } else if (inputField === 'flow' && dose !== null && rwFlow !== null) {
-        document.getElementById('pac_flow').value = ((dose * rwFlow * 3600) / (1.19 * 0.35 * 1000)).toFixed(2);
+        document.getElementById('pac_flow').value = ((dose * rwFlow * 3600) / (1.19 * 0.35 * 1000)).toFixed(0);
     }
 
     const pacFlow = parseFloat(document.getElementById('pac_flow').value) || 0;
@@ -311,11 +312,11 @@ function calculateChlorine(inputField) {
     const flow   = parseFloat(document.getElementById('chlorine_flow').value)    || null;
 
     if (inputField === 'dose' && rwFlow !== null && flow !== null) {
-        document.getElementById('chlorine_dose').value = ((flow * 1000) / (rwFlow * 3600)).toFixed(2);
+        document.getElementById('chlorine_dose').value = ((flow * 1000) / (rwFlow * 3600)).toFixed(1);
     } else if (inputField === 'rw_flow' && dose !== null && flow !== null) {
-        document.getElementById('chlorine_rw_flow').value = ((flow * 1000) / (dose * 3600)).toFixed(5);
+        document.getElementById('chlorine_rw_flow').value = ((flow * 1000) / (dose * 3600)).toFixed(1);
     } else if (inputField === 'flow' && dose !== null && rwFlow !== null) {
-        document.getElementById('chlorine_flow').value = ((dose * rwFlow * 3600) / 1000).toFixed(2);
+        document.getElementById('chlorine_flow').value = ((dose * rwFlow * 3600) / 1000).toFixed(1);
     }
 
     const chlorineFlow = parseFloat(document.getElementById('chlorine_flow').value) || 0;
