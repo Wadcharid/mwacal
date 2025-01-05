@@ -184,18 +184,19 @@
 <!-- 7. Alum Cost Calculation -->
 <div class="block">
     <h2>7. Alum Cost Calculation</h2>
-    <label for="alum_dose">Alum Dose (mg/L):</label>
-    <input type="number" id="alum_dose" step="any">
+    <label for="alum_dose_cost">Alum Dose (mg/L):</label>
+    <input type="number" id="alum_dose_cost" step="any">
     <button onclick="calculateAlumCost('dose')">Calculate</button>
 
     <label for="rw_flow_cost">RW Flow (m³/s):</label>
     <input type="number" id="rw_flow_cost" step="any">
     <button onclick="calculateAlumCost('flow')">Calculate</button>
 
-    <label for="alum_use">Alum Use (Tons/Day):</label>
-    <input type="number" id="alum_use" step="any">
+    <label for="alum_use_cost">Alum Use (Tons/Day):</label>
+    <input type="number" id="alum_use_cost" step="any">
     <button onclick="calculateAlumCost('use')">Calculate</button>
 </div>
+
 
 <script>
 /* --------------------------------------------------------------------------------
@@ -367,23 +368,28 @@ function calculatePulse(inputField) {
    (7) Alum Cost Calculation
 -----------------------------------------------------------------------------------*/
 function calculateAlumCost(action) {
-    const dose = parseFloat(document.getElementById('alum_dose').value)    || null;
-    const flow = parseFloat(document.getElementById('rw_flow_cost').value) || null;
-    const use  = parseFloat(document.getElementById('alum_use').value)     || null;
+    // ดึงค่าจาก input ID ที่เราเปลี่ยนใหม่
+    const dose = parseFloat(document.getElementById('alum_dose_cost').value) || null;
+    const flow = parseFloat(document.getElementById('rw_flow_cost').value)   || null;
+    const use  = parseFloat(document.getElementById('alum_use_cost').value)  || null;
 
     if (action === 'dose' && flow !== null && use !== null) {
-        document.getElementById('alum_dose').value = 
+        // คำนวณกลับไปเป็น dose
+        document.getElementById('alum_dose_cost').value = 
             ((use * 1000 * 1000) / (flow * 3600 * 24 * 2)).toFixed(2);
     } 
     else if (action === 'flow' && dose !== null && use !== null) {
+        // คำนวณหา flow
         document.getElementById('rw_flow_cost').value = 
             ((use * 1000 * 1000) / (dose * 3600 * 24 * 2)).toFixed(5);
     } 
     else if (action === 'use' && dose !== null && flow !== null) {
-        document.getElementById('alum_use').value = 
+        // คำนวณหา alum use
+        document.getElementById('alum_use_cost').value = 
             ((dose * flow * 3600 * 24 * 2) / (1000 * 1000)).toFixed(2);
     }
 }
+
 </script>
 
 </body>
