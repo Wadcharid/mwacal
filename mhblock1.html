@@ -156,30 +156,38 @@
 <!-- 6. Pulsator Pulse Rate Calculation -->
 <div class="block">
     <h2>6. Pulsator Pulse Rate Calculation</h2>
+
+    <!-- RW Flow -->
     <label for="rw_flow">RW Flow (m³/s):</label>
-    <input type="number" id="rw_flow" step="any">
-    <button onclick="calculatePulse('rw_flow')">Calculate</button>
+    <input type="number" id="rw_flow" step="any" />
+    <button onclick="calculatePulse('rw_flow')">Calculate RW Flow</button>
 
+    <!-- Height -->
     <label for="height">Height (cm):</label>
-    <input type="number" id="height" step="any">
-    <button onclick="calculatePulse('height')">Calculate</button>
+    <input type="number" id="height" step="any" />
+    <button onclick="calculatePulse('height')">Calculate Height</button>
 
-    <label for="suction">Suction (sec):</label>
-    <input type="number" id="suction" step="any">
-    <button onclick="calculatePulse('suction')">Calculate</button>
-
+    <!-- Flush -->
     <label for="flush">Flush (sec):</label>
-    <input type="number" id="flush" step="any">
-    <button onclick="calculatePulse('flush')">Calculate</button>
+    <input type="number" id="flush" step="any" />
+    <button onclick="calculatePulse('flush')">Calculate Flush</button>
 
+    <!-- Flush Upflow -->
     <label for="flush_upflow">Flush Upflow (m/h):</label>
-    <input type="number" id="flush_upflow" step="any">
-    <button onclick="calculatePulse('flush_upflow')">Calculate</button>
+    <input type="number" id="flush_upflow" step="any" />
+    <button onclick="calculatePulse('flush_upflow')">Calculate Flush Upflow</button>
 
+    <!-- Suction -->
+    <label for="suction">Suction (sec):</label>
+    <input type="number" id="suction" step="any" />
+    <button onclick="calculatePulse('suction')">Calculate Suction</button>
+
+    <!-- Suction Upflow -->
     <label for="suction_upflow">Suction Upflow (m/h):</label>
-    <input type="number" id="suction_upflow" step="any">
-    <button onclick="calculatePulse('suction_upflow')">Calculate</button>
-</div>
+    <input type="number" id="suction_upflow" step="any" />
+    <button onclick="calculatePulse('suction_upflow')">Calculate Suction Upflow</button>
+
+  </div>
 
 <!-- 7. Alum Cost Calculation -->
 <div class="block">
@@ -325,44 +333,101 @@ function calculateSludge(inputField) {
    - ถ้าต้องการให้ปุ่ม RW Flow, Height, Suction, Flush กดแล้วทำงาน
      ต้องเพิ่มเงื่อนไข if (inputField === 'rw_flow') ... เป็นต้นเอง
 -----------------------------------------------------------------------------------*/
-function calculatePulse(inputField) {
-    const rwFlow       = parseFloat(document.getElementById('rw_flow').value)        || null;
-    const height       = parseFloat(document.getElementById('height').value)         || null;
-    const suction      = parseFloat(document.getElementById('suction').value)        || null;
-    const flush        = parseFloat(document.getElementById('flush').value)          || null;
-    const flushUpflow  = parseFloat(document.getElementById('flush_upflow').value)   || null;
-    const suctionUpflow= parseFloat(document.getElementById('suction_upflow').value) || null;
+/*
+    ตัวแปรทั้งหมดมีความสัมพันธ์ตามสมการเดิม (ตัวอย่าง):
+      flush_upflow = [
+         (rwFlow * 3600 / 2) + ( (height * 0.94 / flush) * 3600 )
+      ] / 2370
 
-    // ตัวอย่างเพิ่มเงื่อนไขเล็ก ๆ น้อย ๆ
-    if (inputField === 'rw_flow') {
-        // สมมติว่าเวลาปรับ RW Flow อยาก clear ค่าบางอย่าง หรือคำนวณอะไรเพิ่ม
-        console.log("User changed rw_flow:", rwFlow);
-        // ใส่สูตรคำนวณเพิ่มเติมได้ตามต้องการ
-    }
-    else if (inputField === 'height') {
-        console.log("User changed height:", height);
-        // ใส่สูตรคำนวณเพิ่มเติมได้ตามต้องการ
-    }
-    else if (inputField === 'suction') {
-        console.log("User changed suction:", suction);
-        // ...
-    }
-    else if (inputField === 'flush') {
-        console.log("User changed flush:", flush);
-        // ...
-    }
+      suction_upflow = [
+         (rwFlow * 3600 / 2) - ( (height * 0.94 / suction) * 3600 )
+      ] / 2370
 
-    // ส่วนที่มีในโค้ดเดิม
-    if (inputField === 'flush_upflow' && rwFlow !== null && height !== null && flush !== null) {
-        document.getElementById('flush_upflow').value = (
-            ((rwFlow * 3600 / 2) + ((height * 94 / 100 / flush) * 3600)) / 2370
-        ).toFixed(2);
-    } else if (inputField === 'suction_upflow' && rwFlow !== null && height !== null && suction !== null) {
-        document.getElementById('suction_upflow').value = (
-            ((rwFlow * 3600 / 2) - ((height * 94 / 100 / suction) * 3600)) / 2370
-        ).toFixed(2);
+    แต่ละปุ่มจะ "คำนวณตัวเอง" จากค่าที่เหลือ
+    - ถ้ากด Calculate flush_upflow => เดินหน้า (Forward)
+    - ถ้ากด Calculate rw_flow => ย้อนกลับ (Inverse) โดยอาศัย flush_upflow
+    - ฯลฯ
+  */
+  function calculatePulse(inputField) {
+    // รับค่าเป็นตัวเลข หรือ null ถ้ายังไม่กรอก
+    const rwFlow       = parseFloat(document.getElementById("rw_flow").value) || null;
+    const height       = parseFloat(document.getElementById("height").value) || null;
+    const flush        = parseFloat(document.getElementById("flush").value) || null;
+    const flushUpflow  = parseFloat(document.getElementById("flush_upflow").value) || null;
+    const suction      = parseFloat(document.getElementById("suction").value) || null;
+    const suctionUpflow= parseFloat(document.getElementById("suction_upflow").value) || null;
+
+    // กรณีคำนวณ Flush Upflow (Forward)
+    if (inputField === "flush_upflow") {
+      // ต้องมี rwFlow, height, flush
+      if (rwFlow !== null && height !== null && flush !== null) {
+        const numerator = (rwFlow * 3600) / 2 + ((height * 0.94 / flush) * 3600);
+        const fUp = numerator / 2370;
+        document.getElementById("flush_upflow").value = fUp.toFixed(2);
+      }
     }
-}
+    // กรณีคำนวณ RW Flow (Inverse) จาก flush_upflow
+    else if (inputField === "rw_flow") {
+      // ต้องมี flush_upflow, height, flush
+      if (flushUpflow !== null && height !== null && flush !== null) {
+        // flush_upflow * 2370 = (rwFlow * 1800) + [3600*(height*0.94/flush)]
+        const leftSide = flushUpflow * 2370;
+        const rightTerm = 3600 * (height * 0.94 / flush);
+        const flow = (leftSide - rightTerm) / 1800;  // 1800 = (3600 / 2)
+        document.getElementById("rw_flow").value = flow.toFixed(2);
+      }
+    }
+    // กรณีคำนวณ Flush (Inverse) จาก flush_upflow
+    else if (inputField === "flush") {
+      // ต้องมี flush_upflow, rwFlow, height
+      if (flushUpflow !== null && rwFlow !== null && height !== null) {
+        // flush_upflow * 2370 = (rwFlow * 1800) + [3600*(height*0.94/flush)]
+        // => flush = (height*0.94 * 3600) / { [rwFlow*1800 + ...] }
+        // (จัดรูปตามสูตรด้านล่าง)
+        const leftSide = (flushUpflow * 2370) - (rwFlow * 1800);
+        if (leftSide !== 0) {
+          const fl = (height * 0.94 * 3600) / leftSide;
+          document.getElementById("flush").value = fl.toFixed(2);
+        }
+      }
+    }
+    // กรณีคำนวณ Height (Inverse) จาก flush_upflow
+    else if (inputField === "height") {
+      // ต้องมี flush_upflow, rwFlow, flush
+      if (flushUpflow !== null && rwFlow !== null && flush !== null) {
+        // flush_upflow * 2370 = (rwFlow * 1800) + [3600*(height*0.94/flush)]
+        // => height = ... (inverse)
+        const leftSide = (flushUpflow * 2370) - (rwFlow * 1800);
+        if (leftSide !== 0) {
+          const ht = (flush * (1 / 0.94)) * (leftSide / 3600);
+          document.getElementById("height").value = ht.toFixed(2);
+        }
+      }
+    }
+    // กรณีคำนวณ Suction Upflow (Forward)
+    else if (inputField === "suction_upflow") {
+      // ต้องมี rwFlow, height, suction
+      if (rwFlow !== null && height !== null && suction !== null) {
+        // suction_upflow = [ (rwFlow * 1800) - (3600*(height*0.94 / suction)) ] / 2370
+        const numerator = (rwFlow * 3600) / 2 - ((height * 0.94 / suction) * 3600);
+        const sUp = numerator / 2370;
+        document.getElementById("suction_upflow").value = sUp.toFixed(2);
+      }
+    }
+    // กรณีคำนวณ Suction (Inverse) จาก suction_upflow
+    else if (inputField === "suction") {
+      // ต้องมี suction_upflow, rwFlow, height
+      if (suctionUpflow !== null && rwFlow !== null && height !== null) {
+        // suction_upflow * 2370 = (rwFlow * 1800) - 3600*(height*0.94/suction)
+        // => suction = ...
+        const leftSide = (rwFlow * 3600) / 2 - (suctionUpflow * 2370);
+        if (leftSide !== 0) {
+          const su = (height * 0.94 * 3600) / leftSide;
+          document.getElementById("suction").value = su.toFixed(2);
+        }
+      }
+    }
+  }
 
 /* --------------------------------------------------------------------------------
    (7) Alum Cost Calculation
