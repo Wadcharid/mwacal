@@ -77,13 +77,13 @@
 <div class="block">
     <h2>1. Raw Water Flow Rate</h2>
     <label for="flow_m3s">Flow Rate (m³/s):</label>
-    <input type="number" id="flow_m3s" step="any" oninput="calculateFlowRate('m3s')">
+    <input type="number" id="flow_m3s" step="0.1" oninput="calculateFlowRate('m3s')">
 
     <label for="flow_m3h">Flow Rate (m³/h):</label>
-    <input type="number" id="flow_m3h" step="any" oninput="calculateFlowRate('m3h')">
+    <input type="number" id="flow_m3h" step="1.0" oninput="calculateFlowRate('m3h')">
 
     <label for="flow_m3day">Flow Rate (m³/day):</label>
-    <input type="number" id="flow_m3day" step="any" oninput="calculateFlowRate('m3day')">
+    <input type="number" id="flow_m3day" step="1.0" oninput="calculateFlowRate('m3day')">
 </div>
 
 <!-- 2. Alum Dosing Calculation -->
@@ -249,9 +249,9 @@ function calculateFlowRate(unit) {
     }
 
     // แสดงผลกลับไปที่ input
-    document.getElementById('flow_m3s').value   = flow_s.toFixed(3);
-    document.getElementById('flow_m3h').value   = flow_h.toFixed(3);
-    document.getElementById('flow_m3day').value = flow_day.toFixed(3);
+    document.getElementById('flow_m3s').value   = flow_s.toFixed(1);
+    document.getElementById('flow_m3h').value   = flow_h.toFixed(0);
+    document.getElementById('flow_m3day').value = flow_day.toFixed(0);
 }
 
 /* --------------------------------------------------------------------------------
