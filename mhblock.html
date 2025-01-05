@@ -179,23 +179,15 @@
     <h2>7. Alum Cost Calculation</h2>
     <label for="alum_dose">Alum Dose (mg/L):</label>
     <input type="number" id="alum_dose" step="any">
-    <button onclick="calculateAlumCost('alum_dose')">Calculate</button>
+    <button onclick="calculateAlumCost('dose')">Calculate</button>
 
     <label for="rw_flow_cost">RW Flow (m³/s):</label>
     <input type="number" id="rw_flow_cost" step="any">
-    <button onclick="calculateAlumCost('rw_flow_cost')">Calculate</button>
+    <button onclick="calculateAlumCost('flow')">Calculate</button>
 
     <label for="alum_use">Alum Use (Tons/Day):</label>
     <input type="number" id="alum_use" step="any">
-    <button onclick="calculateAlumCost('alum_use')">Calculate</button>
-
-    <label for="price_per_ton">Price (Baht/Ton):</label>
-    <input type="number" id="price_per_ton" step="any">
-    <button onclick="calculateAlumCost('price_per_ton')">Calculate</button>
-
-    <label for="alum_cost_per_m3">Alum Use Cost (Baht/m³):</label>
-    <input type="number" id="alum_cost_per_m3" step="any">
-    <button onclick="calculateAlumCost('alum_cost_per_m3')">Calculate</button>
+    <button onclick="calculateAlumCost('use')">Calculate</button>
 </div>
 
     
@@ -287,25 +279,16 @@ function calculatePulse(inputField) {
 
 // Alum Cost Calculation
 function calculateAlumCost(action) {
-    const alumDose = parseFloat(document.getElementById('alum_dose').value) || 0;
-    const rwFlow = parseFloat(document.getElementById('rw_flow_cost').value) || 0;
-    const price = parseFloat(document.getElementById('price_per_ton').value) || 0;
-    let alumUse = parseFloat(document.getElementById('alum_use').value) || 0;
-    let alumCost = parseFloat(document.getElementById('alum_cost_per_m3').value) || 0;
+    const dose = parseFloat(document.getElementById('alum_dose').value) || null;
+    const flow = parseFloat(document.getElementById('rw_flow_cost').value) || null;
+    const use = parseFloat(document.getElementById('alum_use').value) || null;
 
-    console.log("Action:", action);
-    console.log("Alum Dose:", alumDose, "RW Flow:", rwFlow);
-
-    if (action === 'alum_use' && alumDose > 0 && rwFlow > 0) {
-        alumUse = (alumDose * rwFlow * 3600 * 24 * 2) / (1000 * 1000); // Tons/Day
-        document.getElementById('alum_use').value = alumUse.toFixed(2);
-        console.log("Calculated Alum Use:", alumUse);
-    }
-
-    if (action === 'alum_cost' && alumUse > 0 && price > 0 && rwFlow > 0) {
-        alumCost = (alumUse * price) / (rwFlow * 3600 * 24); // Baht/m³
-        document.getElementById('alum_cost_per_m3').value = alumCost.toFixed(4);
-        console.log("Calculated Alum Cost:", alumCost);
+    if (action === 'dose' && flow !== null && use !== null) {
+        document.getElementById('alum_dose').value = ((use * 1000 * 1000) / (flow * 3600 * 24 * 2)).toFixed(2);
+    } else if (action === 'flow' && dose !== null && use !== null) {
+        document.getElementById('rw_flow_cost').value = ((use * 1000 * 1000) / (dose * 3600 * 24 * 2)).toFixed(5);
+    } else if (action === 'use' && dose !== null && flow !== null) {
+        document.getElementById('alum_use').value = ((dose * flow * 3600 * 24 * 2) / (1000 * 1000)).toFixed(2);
     }
 }
 
