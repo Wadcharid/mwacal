@@ -193,18 +193,32 @@
 
 <!-- 7. Alum Cost Calculation -->
 <div class="block">
-    <h2>7. Alum Cost Calculation</h2>
-    <label for="alum_dose_cost">Alum Dose (mg/L):</label>
-    <input type="number" id="alum_dose_cost" step="any">
-    <button onclick="calculateAlumCost('dose')">Calculate</button>
+  <h2>7. Alum Cost Calculation</h2>
 
-    <label for="rw_flow_cost">RW Flow (m³/s):</label>
-    <input type="number" id="rw_flow_cost" step="any">
-    <button onclick="calculateAlumCost('flow')">Calculate</button>
+  <!-- (1) Alum Dose (mg/L) -->
+  <label for="alum_dose_cost">Alum Dose (mg/L):</label>
+  <input type="number" id="alum_dose_cost" step="any" />
+  <button onclick="calculateAlumCost('dose')">Calculate Dose</button>
 
-    <label for="alum_use_cost">Alum Use (Tons/Day):</label>
-    <input type="number" id="alum_use_cost" step="any">
-    <button onclick="calculateAlumCost('use')">Calculate</button>
+  <!-- (2) RW Flow (m³/s) -->
+  <label for="rw_flow_cost">RW Flow (m³/s):</label>
+  <input type="number" id="rw_flow_cost" step="any" />
+  <button onclick="calculateAlumCost('flow')">Calculate Flow</button>
+
+  <!-- (3) Alum Use (Tons/Day) -->
+  <label for="alum_use">Alum Use (Tons/Day):</label>
+  <input type="number" id="alum_use" step="any" />
+  <button onclick="calculateAlumCost('use')">Calculate Alum Use</button>
+
+  <!-- (4) Price (Baht/Ton) -->
+  <label for="price">Price (Baht/Ton):</label>
+  <input type="number" id="price" step="any" />
+  <button onclick="calculateAlumCost('price')">Calculate Price</button>
+
+  <!-- (5) Alum Use Cost (Baht/m³) -->
+  <label for="alum_use_cost">Alum Use Cost (Baht/m³):</label>
+  <input type="number" id="alum_use_cost" step="any" />
+  <button onclick="calculateAlumCost('cost')">Calculate Cost</button>
 </div>
 
 
@@ -435,26 +449,71 @@ function calculateSludge(inputField) {
    (7) Alum Cost Calculation
 -----------------------------------------------------------------------------------*/
 function calculateAlumCost(action) {
-    // ดึงค่าจาก input ID ที่เราเปลี่ยนใหม่
-    const dose = parseFloat(document.getElementById('alum_dose_cost').value) || null;
-    const flow = parseFloat(document.getElementById('rw_flow_cost').value)   || null;
-    const use  = parseFloat(document.getElementById('alum_use_cost').value)  || null;
+  // อ่านค่าจาก input (เป็น null หากว่างเปล่า)
+  const dose  = parseFloat(document.getElementById("alum_dose_cost").value) || null; // mg/L
+  const flow  = parseFloat(document.getElementById("rw_flow_cost").value)   || null; // m³/s
+  const use   = parseFloat(document.getElementById("alum_use").value)       || null; // Tons/Day
+  const price = parseFloat(document.getElementById("price").value)          || null; // Baht/Ton
+  const cost  = parseFloat(document.getElementById("alum_use_cost").value)  || null; // Baht/m³
 
-    if (action === 'dose' && flow !== null && use !== null) {
-        // คำนวณกลับไปเป็น dose
-        document.getElementById('alum_dose_cost').value = 
-            ((use * 1000 * 1000) / (flow * 3600 * 24 * 2)).toFixed(2);
-    } 
-    else if (action === 'flow' && dose !== null && use !== null) {
-        // คำนวณหา flow
-        document.getElementById('rw_flow_cost').value = 
-            ((use * 1000 * 1000) / (dose * 3600 * 24 * 2)).toFixed(5);
-    } 
-    else if (action === 'use' && dose !== null && flow !== null) {
-        // คำนวณหา alum use
-        document.getElementById('alum_use_cost').value = 
-            ((dose * flow * 3600 * 24 * 2) / (1000 * 1000)).toFixed(2);
+  // -------------------------------------------------------
+  // (A) สมการเดิม (Dose, Flow, Use)
+  //   dose = (use * 1,000,000) / (flow * 3600 * 24 * 2)
+  //   flow = (use * 1,000,000) / (dose * 3600 * 24 * 2)
+  //   use  = (dose * flow * 3600 * 24 * 2) / 1,000,000
+  // -------------------------------------------------------
+  if (action === "dose") {
+    // อยากคำนวณ dose -> ต้องรู้ use, flow
+    if (use !== null && flow !== null && flow !== 0) {
+      const d = (use * 1000000) / (flow * 3600 * 24 * 2);
+      document.getElementById("alum_dose_cost").value = d.toFixed(2);
     }
+  } 
+  else if (action === "flow") {
+    // อยากคำนวณ flow -> ต้องรู้ dose, use
+    if (dose !== null && use !== null && dose !== 0) {
+      const f = (use * 1000000) / (dose * 3600 * 24 * 2);
+      document.getElementById("rw_flow_cost").value = f.toFixed(5);
+    }
+  }
+  else if (action === "use") {
+    // อยากคำนวณ use -> ต้องรู้ dose, flow
+    // หรือจะคำนวณ use จาก cost, price, flow ก็ได้ (สมการใหม่)  
+    // ลองเช็คก่อนว่า cost, price, flow ไม่เป็น null => ใช้สมการใหม่
+    if (cost !== null && price !== null && flow !== null && price !== 0) {
+      // cost = (use * price) / (flow * 24 * 3600)
+      // => use = cost * (flow * 24 * 3600) / price
+      const u = (cost * (flow * 86400)) / price;
+      document.getElementById("alum_use").value = u.toFixed(2);
+    }
+    else if (dose !== null && flow !== null) {
+      // สมการเดิม: use = (dose * flow * 3600 * 24 * 2) / 1000000
+      const u = (dose * flow * 3600 * 24 * 2) / 1000000;
+      document.getElementById("alum_use").value = u.toFixed(2);
+    }
+  }
+
+  // -------------------------------------------------------
+  // (B) สมการใหม่ (Cost, Price, Flow, Use)
+  //   cost  = (use * price) / (flow * 24 * 3600)
+  //   price = (cost * flow * 24 * 3600) / use
+  //   use   = (cost * flow * 24 * 3600) / price
+  //   flow  = (use * price) / (cost) * (1 / 24 * 3600)
+  // -------------------------------------------------------
+  else if (action === "price") {
+    // price = (cost * flow * 86400) / use
+    if (cost !== null && flow !== null && use !== null && use !== 0) {
+      const p = (cost * flow * 86400) / use;
+      document.getElementById("price").value = p.toFixed(2);
+    }
+  }
+  else if (action === "cost") {
+    // cost = (use * price) / (flow * 86400)
+    if (use !== null && price !== null && flow !== null && flow !== 0) {
+      const c = (use * price) / (flow * 86400);
+      document.getElementById("alum_use_cost").value = c.toFixed(4);
+    }
+  }
 }
 
 </script>
