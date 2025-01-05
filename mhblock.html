@@ -179,23 +179,23 @@
     <h2>7. Alum Cost Calculation</h2>
     <label for="alum_dose">Alum Dose (mg/L):</label>
     <input type="number" id="alum_dose" step="any">
-    <button onclick="calculateAlumCost('dose')">Calculate</button>
+    <button onclick="calculateAlumCost('alum_dose')">Calculate</button>
 
     <label for="rw_flow_cost">RW Flow (m³/s):</label>
     <input type="number" id="rw_flow_cost" step="any">
-    <button onclick="calculateAlumCost('rw_flow')">Calculate</button>
+    <button onclick="calculateAlumCost('rw_flow_cost')">Calculate</button>
 
     <label for="alum_use">Alum Use (Tons/Day):</label>
     <input type="number" id="alum_use" step="any">
-    <button onclick="calculateAlumCost('use')">Calculate</button>
+    <button onclick="calculateAlumCost('alum_use')">Calculate</button>
 
     <label for="price_per_ton">Price (Baht/Ton):</label>
     <input type="number" id="price_per_ton" step="any">
-    <button onclick="calculateAlumCost('price')">Calculate</button>
+    <button onclick="calculateAlumCost('price_per_ton')">Calculate</button>
 
-    <label for="alum_cost">Alum Use Cost (Baht/m³):</label>
-    <input type="number" id="alum_cost" step="any">
-    <button onclick="calculateAlumCost('cost')">Calculate</button>
+    <label for="alum_cost_per_m3">Alum Use Cost (Baht/m³):</label>
+    <input type="number" id="alum_cost_per_m3" step="any">
+    <button onclick="calculateAlumCost('alum_cost_per_m3')">Calculate</button>
 </div>
 
     
@@ -287,16 +287,18 @@ function calculatePulse(inputField) {
 
 // Alum Cost Calculation
 function calculateAlumCost(inputField) {
-    const dose = parseFloat(document.getElementById('alum_dose').value) || null;
+    const alumDose = parseFloat(document.getElementById('alum_dose').value) || null;
     const rwFlow = parseFloat(document.getElementById('rw_flow_cost').value) || null;
-    const use = parseFloat(document.getElementById('alum_use').value) || null;
     const price = parseFloat(document.getElementById('price_per_ton').value) || null;
-    const cost = parseFloat(document.getElementById('alum_cost').value) || null;
 
-    if (inputField === 'cost' && dose !== null && rwFlow !== null && price !== null) {
-        document.getElementById('alum_cost').value = ((dose * rwFlow * 3600 * 24 * 2) * price / (1000 * 1000 * rwFlow * 3600 * 24)).toFixed(4);
+    if (inputField === 'alum_use' && alumDose !== null && rwFlow !== null) {
+        const alumUse = (alumDose * rwFlow * 3600 * 24 * 2) / (1000 * 1000);
+        document.getElementById('alum_use').value = alumUse.toFixed(2);
+    } else if (inputField === 'alum_cost_per_m3' && alumDose !== null && rwFlow !== null && price !== null) {
+        const alumUse = (alumDose * rwFlow * 3600 * 24 * 2) / (1000 * 1000);
+        const alumCost = (alumUse * price) / (rwFlow * 3600 * 24);
+        document.getElementById('alum_cost_per_m3').value = alumCost.toFixed(4);
     }
-    // Additional logic for other fields can be implemented as needed
 }
 
     
