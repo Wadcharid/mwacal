@@ -148,7 +148,32 @@
     <button onclick="calculateSludge('drain')">Calculate</button>
 </div>
     
+<div class="block">
+    <h2>6. Pulsator Pulse Rate Calculation</h2>
+    <label for="rw_flow">RW Flow (m³/s):</label>
+    <input type="number" id="rw_flow" step="any">
+    <button onclick="calculatePulse('rw_flow')">Calculate</button>
 
+    <label for="height">Height (cm):</label>
+    <input type="number" id="height" step="any">
+    <button onclick="calculatePulse('height')">Calculate</button>
+
+    <label for="suction">Suction (sec):</label>
+    <input type="number" id="suction" step="any">
+    <button onclick="calculatePulse('suction')">Calculate</button>
+
+    <label for="flush">Flush (sec):</label>
+    <input type="number" id="flush" step="any">
+    <button onclick="calculatePulse('flush')">Calculate</button>
+
+    <label for="flush_upflow">Flush Upflow (m/h):</label>
+    <input type="number" id="flush_upflow" step="any">
+    <button onclick="calculatePulse('flush_upflow')">Calculate</button>
+
+    <label for="suction_upflow">Suction Upflow (m/h):</label>
+    <input type="number" id="suction_upflow" step="any">
+    <button onclick="calculatePulse('suction_upflow')">Calculate</button>
+</div>
     
 <script>
 // Alum Dosing Calculation
@@ -220,7 +245,21 @@ function calculateSludge(inputField) {
     }
 }
 
+// Pulsator Pulse Rate Calculation
+function calculatePulse(inputField) {
+    const rwFlow = parseFloat(document.getElementById('rw_flow').value) || null;
+    const height = parseFloat(document.getElementById('height').value) || null;
+    const suction = parseFloat(document.getElementById('suction').value) || null;
+    const flush = parseFloat(document.getElementById('flush').value) || null;
+    const flushUpflow = parseFloat(document.getElementById('flush_upflow').value) || null;
+    const suctionUpflow = parseFloat(document.getElementById('suction_upflow').value) || null;
 
+    if (inputField === 'flush_upflow' && rwFlow !== null && height !== null && flush !== null) {
+        document.getElementById('flush_upflow').value = (((rwFlow * 3600 / 2) + ((height * 94 / 100 / flush) * 3600)) / 2370).toFixed(2);
+    } else if (inputField === 'suction_upflow' && rwFlow !== null && height !== null && suction !== null) {
+        document.getElementById('suction_upflow').value = (((rwFlow * 3600 / 2) + ((height * 94 / 100 / suction) * 3600)) / 2370).toFixed(2);
+    }
+}
     
 </script>
 
