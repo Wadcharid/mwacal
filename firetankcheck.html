@@ -26,6 +26,7 @@
       margin-top: 20px;
       font-size: 18px;
       color: #333;
+      padding: 10px;
     }
   </style>
 </head>
@@ -34,7 +35,7 @@
   <div id="reader"></div>
   <div id="result">📷 กำลังรอสแกน...</div>
 
-  <!-- Example form link:
+  <!-- ตัวอย่างลิงก์ฟอร์ม:
   https://docs.google.com/forms/d/e/1FAIpQLSfce9VBk_yLKH3yrG868pZe0Q6bcBEtbSe1vwgAsMgveG88GQ/viewform?entry.1454399322=12345678901234 
   -->
 
@@ -52,13 +53,19 @@
       }
     }
 
-    // เลือกกล้องที่เหมาะสมที่สุด (เลี่ยงกล้อง Tele)
     Html5Qrcode.getCameras().then(devices => {
       if (devices && devices.length > 0) {
-        // เลือกกล้องหลังที่ไม่มีคำว่า 'tele'
+        // เลือกกล้องที่เป็นเลนส์หลัก (ไม่ใช่ telephoto)
         const preferredCamera = devices.find(
-          d => d.label.toLowerCase().includes('back') && !d.label.toLowerCase().includes('tele')
-        ) || devices[0]; // ถ้าไม่เจอก็เลือกตัวแรก
+          d =>
+            (d.label.toLowerCase().includes("back") || d.label.toLowerCase().includes("rear")) &&
+            !d.label.toLowerCase().includes("tele") &&
+            (d.label.toLowerCase().includes("wide") || d.label.toLowerCase().includes("1x") || d.label.toLowerCase().includes("camera"))
+        ) || devices.find(
+          d => d.label.toLowerCase().includes("back") && !d.label.toLowerCase().includes("tele")
+        ) || devices[0]; // fallback กล้องแรก
+
+        document.getElementById('result').innerText = "📷 ใช้กล้อง: " + preferredCamera.label;
 
         const html5QrCode = new Html5Qrcode("reader");
         html5QrCode.start(
