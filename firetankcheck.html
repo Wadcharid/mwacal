@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>สแกนถังดับเพลิง</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
@@ -22,6 +22,11 @@
       margin: auto;
       padding-top: 20px;
     }
+    #camera-select {
+      margin-top: 10px;
+      font-size: 16px;
+      padding: 5px;
+    }
     #result {
       margin-top: 20px;
       font-size: 18px;
@@ -32,55 +37,78 @@
 </head>
 <body>
   <h2>📦 สแกนรหัสถังดับเพลิง</h2>
+  <select id="camera-select"></select>
   <div id="reader"></div>
-  <div id="result">📷 กำลังรอสแกน...</div>
-
-  <!-- ตัวอย่างลิงก์ฟอร์ม:
-  https://docs.google.com/forms/d/e/1FAIpQLSfce9VBk_yLKH3yrG868pZe0Q6bcBEtbSe1vwgAsMgveG88GQ/viewform?entry.1454399322=12345678901234 
-  -->
+  <div id="result">📷 กำลังโหลดกล้อง...</div>
 
   <script>
     const FORM_ID = "1FAIpQLSfce9VBk_yLKH3yrG868pZe0Q6bcBEtbSe1vwgAsMgveG88GQ";
     const ENTRY_ID = "1454399322";
+    const cameraSelect = document.getElementById("camera-select");
+    const resultBox = document.getElementById("result");
+    const html5QrCode = new Html5Qrcode("reader");
+    let currentCameraId = null;
 
     function onScanSuccess(qrCodeMessage) {
       if (/^\d{14}$/.test(qrCodeMessage)) {
-        document.getElementById('result').innerText = "✅ รหัส: " + qrCodeMessage;
+        resultBox.innerText = "✅ รหัส: " + qrCodeMessage;
         const formUrl = `https://docs.google.com/forms/d/e/${FORM_ID}/viewform?entry.${ENTRY_ID}=${qrCodeMessage}`;
+        html5QrCode.stop(); // หยุดกล้องก่อน redirect
         window.location.href = formUrl;
       } else {
-        document.getElementById('result').innerText = "❌ รหัสไม่ถูกต้อง (ต้องเป็นตัวเลข 14 หลัก)";
+        resultBox.innerText = "❌ รหัสไม่ถูกต้อง (ต้องเป็นตัวเลข 14 หลัก)";
       }
     }
 
-    Html5Qrcode.getCameras().then(devices => {
-      if (devices && devices.length > 0) {
-        // เลือกกล้องที่เป็นเลนส์หลัก (ไม่ใช่ telephoto)
-        const preferredCamera = devices.find(
-          d =>
-            (d.label.toLowerCase().includes("back") || d.label.toLowerCase().includes("rear")) &&
-            !d.label.toLowerCase().includes("tele") &&
-            (d.label.toLowerCase().includes("wide") || d.label.toLowerCase().includes("1x") || d.label.toLowerCase().includes("camera"))
-        ) || devices.find(
-          d => d.label.toLowerCase().includes("back") && !d.label.toLowerCase().includes("tele")
-        ) || devices[0]; // fallback กล้องแรก
-
-        document.getElementById('result').innerText = "📷 ใช้กล้อง: " + preferredCamera.label;
-
-        const html5QrCode = new Html5Qrcode("reader");
-        html5QrCode.start(
-          preferredCamera.id,
+    function startCamera(cameraId) {
+      html5QrCode
+        .start(
+          cameraId,
           { fps: 10, qrbox: { width: 250, height: 250 } },
           onScanSuccess
-        ).catch(err => {
-          document.getElementById('result').innerText = "❌ ไม่สามารถเปิดกล้องได้: " + err;
+        )
+        .then(() => {
+          currentCameraId = cameraId;
+          const label = cameraSelect.selectedOptions[0].text;
+          resultBox.innerText = "📷 ใช้กล้อง: " + label;
+        })
+        .catch(err => {
+          resultBox.innerText = "❌ ไม่สามารถเปิดกล้องได้: " + err;
         });
-      } else {
-        document.getElementById('result').innerText = "❌ ไม่พบกล้อง";
-      }
-    }).catch(err => {
-      document.getElementById('result').innerText = "❌ ไม่สามารถเข้าถึงกล้อง: " + err;
-    });
+    }
+
+    Html5Qrcode.getCameras()
+      .then(devices => {
+        if (devices.length === 0) {
+          resultBox.innerText = "❌ ไม่พบกล้อง";
+          return;
+        }
+
+        // เพิ่ม options ลง dropdown
+        devices.forEach((device, index) => {
+          const option = document.createElement("option");
+          option.value = device.id;
+          option.text = device.label || `Camera ${index + 1}`;
+          cameraSelect.appendChild(option);
+        });
+
+        // เริ่มต้นกล้องตัวแรก
+        startCamera(devices[0].id);
+
+        // เปลี่ยนกล้องเมื่อเลือก
+        cameraSelect.addEventListener("change", () => {
+          if (currentCameraId) {
+            html5QrCode.stop().then(() => {
+              startCamera(cameraSelect.value);
+            });
+          } else {
+            startCamera(cameraSelect.value);
+          }
+        });
+      })
+      .catch(err => {
+        resultBox.innerText = "❌ ไม่สามารถเข้าถึงกล้อง: " + err;
+      });
   </script>
 </body>
 </html>
