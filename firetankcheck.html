@@ -1,41 +1,78 @@
 <!DOCTYPE html>
-<html>
+<html lang="th">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>สแกนถังดับเพลิง</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
-    #reader { width: 300px; margin: auto; padding-top: 20px; }
-    #result { margin-top: 20px; font-size: 16px; text-align: center; }
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      background-color: #f4f4f4;
+    }
+    h2 {
+      margin-top: 20px;
+    }
+    #reader {
+      width: 90%;
+      max-width: 400px;
+      margin: auto;
+      padding-top: 20px;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #333;
+    }
   </style>
 </head>
 <body>
-  <h2 style="text-align:center;">📦 สแกนรหัสถังดับเพลิง</h2>
+  <h2>📦 สแกนรหัสถังดับเพลิง</h2>
   <div id="reader"></div>
   <div id="result">📷 กำลังรอสแกน...</div>
 
-<!-- https://docs.google.com/forms/d/e/1FAIpQLSfce9VBk_yLKH3yrG868pZe0Q6bcBEtbSe1vwgAsMgveG88GQ/viewform?usp=pp_url&entry.1454399322=12345678901234 -->
-  
+  <!-- Example form link:
+  https://docs.google.com/forms/d/e/1FAIpQLSfce9VBk_yLKH3yrG868pZe0Q6bcBEtbSe1vwgAsMgveG88GQ/viewform?entry.1454399322=12345678901234 
+  -->
+
   <script>
     const FORM_ID = "1FAIpQLSfce9VBk_yLKH3yrG868pZe0Q6bcBEtbSe1vwgAsMgveG88GQ";
-    const ENTRY_ID = "1454399322"; // แก้ตามช่อง “รหัสถังดับเพลิง”
+    const ENTRY_ID = "1454399322";
 
     function onScanSuccess(qrCodeMessage) {
       if (/^\d{14}$/.test(qrCodeMessage)) {
-        document.getElementById('result').innerHTML = "✅ รหัส: " + qrCodeMessage;
+        document.getElementById('result').innerText = "✅ รหัส: " + qrCodeMessage;
         const formUrl = `https://docs.google.com/forms/d/e/${FORM_ID}/viewform?entry.${ENTRY_ID}=${qrCodeMessage}`;
         window.location.href = formUrl;
       } else {
-        document.getElementById('result').innerHTML = "❌ รหัสไม่ถูกต้อง (ต้องเป็นตัวเลข 14 หลัก)";
+        document.getElementById('result').innerText = "❌ รหัสไม่ถูกต้อง (ต้องเป็นตัวเลข 14 หลัก)";
       }
     }
 
-    const html5QrCode = new Html5Qrcode("reader");
-    html5QrCode.start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: 250 },
-      onScanSuccess
-    ).catch(err => {
-      document.getElementById('result').innerHTML = "❌ เปิดกล้องไม่สำเร็จ: " + err;
+    // เลือกกล้องที่เหมาะสมที่สุด (เลี่ยงกล้อง Tele)
+    Html5Qrcode.getCameras().then(devices => {
+      if (devices && devices.length > 0) {
+        // เลือกกล้องหลังที่ไม่มีคำว่า 'tele'
+        const preferredCamera = devices.find(
+          d => d.label.toLowerCase().includes('back') && !d.label.toLowerCase().includes('tele')
+        ) || devices[0]; // ถ้าไม่เจอก็เลือกตัวแรก
+
+        const html5QrCode = new Html5Qrcode("reader");
+        html5QrCode.start(
+          preferredCamera.id,
+          { fps: 10, qrbox: { width: 250, height: 250 } },
+          onScanSuccess
+        ).catch(err => {
+          document.getElementById('result').innerText = "❌ ไม่สามารถเปิดกล้องได้: " + err;
+        });
+      } else {
+        document.getElementById('result').innerText = "❌ ไม่พบกล้อง";
+      }
+    }).catch(err => {
+      document.getElementById('result').innerText = "❌ ไม่สามารถเข้าถึงกล้อง: " + err;
     });
   </script>
 </body>
