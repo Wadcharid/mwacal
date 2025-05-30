@@ -42,6 +42,19 @@
   <div id="result">📷 กำลังโหลดกล้อง...</div>
 
   <script>
+    // ตรวจว่าเปิดจาก LINE หรือไม่ แล้วพยายามเปิดใน browser
+    if (/Line/i.test(navigator.userAgent)) {
+      const targetUrl = window.location.href;
+
+      if (/Android/i.test(navigator.userAgent)) {
+        // Redirect ไป Chrome บน Android
+        window.location.href = "intent://" + targetUrl.replace(/^https?:\/\//, "") +
+          "#Intent;scheme=https;package=com.android.chrome;end;";
+      } else if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        alert("📱 กรุณาเปิดลิงก์นี้ใน Safari โดยกดที่ ... แล้วเลือก 'เปิดใน Safari'");
+      }
+    }
+
     const FORM_ID = "1FAIpQLSfce9VBk_yLKH3yrG868pZe0Q6bcBEtbSe1vwgAsMgveG88GQ";
     const ENTRY_ID = "1454399322";
     const cameraSelect = document.getElementById("camera-select");
@@ -84,7 +97,6 @@
           return;
         }
 
-        // เพิ่ม options ลง dropdown
         devices.forEach((device, index) => {
           const option = document.createElement("option");
           option.value = device.id;
@@ -92,10 +104,8 @@
           cameraSelect.appendChild(option);
         });
 
-        // เริ่มต้นกล้องตัวแรก
         startCamera(devices[0].id);
 
-        // เปลี่ยนกล้องเมื่อเลือก
         cameraSelect.addEventListener("change", () => {
           if (currentCameraId) {
             html5QrCode.stop().then(() => {
@@ -111,9 +121,10 @@
       });
   </script>
 
-  <p><a href="https://docs.google.com/spreadsheets/d/1hBd5Lud7yivTV4275VmBXFfqiqV7epKhdXYh7Taosac/edit?usp=sharing" target="_blank">
-  เปิด Data log
-</a>
-</p>
+  <p>
+    <a href="https://docs.google.com/spreadsheets/d/1hBd5Lud7yivTV4275VmBXFfqiqV7epKhdXYh7Taosac/edit?usp=sharing" target="_blank">
+      เปิด Data log
+    </a>
+  </p>
 </body>
 </html>
