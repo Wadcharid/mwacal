@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>สแกนถังดับเพลิง</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    #reader { width: 300px; margin: auto; padding-top: 20px; }
+    #result { margin-top: 20px; font-size: 16px; text-align: center; }
+  </style>
+</head>
+<body>
+  <h2 style="text-align:center;">📦 สแกนรหัสถังดับเพลิง</h2>
+  <div id="reader"></div>
+  <div id="result">📷 กำลังรอสแกน...</div>
+
+<!-- https://docs.google.com/forms/d/e/1FAIpQLSfce9VBk_yLKH3yrG868pZe0Q6bcBEtbSe1vwgAsMgveG88GQ/viewform?usp=pp_url&entry.1454399322=12345678901234 -->
+  
+  <script>
+    const FORM_ID = "1FAIpQLSfce9VBk_yLKH3yrG868pZe0Q6bcBEtbSe1vwgAsMgveG88GQ";
+    const ENTRY_ID = "1454399322"; // แก้ตามช่อง “รหัสถังดับเพลิง”
+
+    function onScanSuccess(qrCodeMessage) {
+      if (/^\d{14}$/.test(qrCodeMessage)) {
+        document.getElementById('result').innerHTML = "✅ รหัส: " + qrCodeMessage;
+        const formUrl = `https://docs.google.com/forms/d/e/${FORM_ID}/viewform?entry.${ENTRY_ID}=${qrCodeMessage}`;
+        window.location.href = formUrl;
+      } else {
+        document.getElementById('result').innerHTML = "❌ รหัสไม่ถูกต้อง (ต้องเป็นตัวเลข 14 หลัก)";
+      }
+    }
+
+    const html5QrCode = new Html5Qrcode("reader");
+    html5QrCode.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: 250 },
+      onScanSuccess
+    ).catch(err => {
+      document.getElementById('result').innerHTML = "❌ เปิดกล้องไม่สำเร็จ: " + err;
+    });
+  </script>
+</body>
+</html>
