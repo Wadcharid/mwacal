@@ -9,6 +9,7 @@
 | ไฟล์ | รายละเอียด |
 |---|---|
 | **[`index.html`](index.html)** | **โปรแกรม Single-Page Web Application** สำหรับคำนวณการจ่ายสารเคมี (Quick Shift Calculator) และระบบจำลองสต็อกสารเคมี 10 วันล่วงหน้า (10-Day Stock Runway Simulator) |
+| **[`sop_action_matrix.md`](sop_action_matrix.md)** | **แผนปฏิบัติการมาตรฐานและเมทริกซ์ขั้นบันได (SOP & Action Matrix - แบบ A)** สำหรับวิศวกรเวรและโอเปอเรเตอร์หน้างาน กำหนดอัตราจ่ายสารเคมีแยก Phase 1–4, รอบระบายตะกอน และเช็กลิสต์ประจำกะ |
 | **[`executive_preparedness_report.md`](executive_preparedness_report.md)** | **รายงานสรุปสำหรับผู้บริหาร** ถอดบทเรียนเชิงสถิติปี 2024, การประเมินความเสี่ยงเชิงระบบ, และแผนปฏิบัตินับถอยหลัง 4–5 วัน (T-Minus Roadmap) |
 | `BigQuery_poly_tons_total_rw_cmd_total_p_2024-08-01_2024-08-31 (1).csv` | ข้อมูลปริมาณสูบน้ำดิบ น้ำประปาสูบจ่าย และปริมาณการใช้สารเคมี (Alum, PAC, Polymer) รายวัน สิงหาคม 2024 |
 | `mwa_export_20260928_084442.csv` | ข้อมูลคุณภาพน้ำดิบ (Turbidity RW) สถานีสูบน้ำดิบมหาสวัสดิ์ (QWS) ความถี่ทุก 2 ชั่วโมง สิงหาคม 2024 |
