@@ -8,7 +8,7 @@
 
 | ไฟล์ | รายละเอียด |
 |---|---|
-| **[`index.html`](index.html)** | **โปรแกรม Single-Page Web Application** สำหรับคำนวณการจ่ายสารเคมี (Quick Shift Calculator) และระบบจำลองสต็อกสารเคมี 10 วันล่วงหน้า (10-Day Stock Runway Simulator) |
+| **[`loveyou500.html`](loveyou500.html)** | **โปรแกรม Single-Page Web Application** สำหรับคำนวณการจ่ายสารเคมี (Quick Shift Calculator) และระบบจำลองสต็อกสารเคมี 10 วันล่วงหน้า (10-Day Stock Runway Simulator) |
 | **[`sop_action_matrix.md`](sop_action_matrix.md)** | **แผนปฏิบัติการมาตรฐานและเมทริกซ์ขั้นบันได (SOP & Action Matrix - แบบ A)** สำหรับวิศวกรเวรและโอเปอเรเตอร์หน้างาน กำหนดอัตราจ่ายสารเคมีแยก Phase 1–4, รอบระบายตะกอน และเช็กลิสต์ประจำกะ |
 | **[`executive_preparedness_report.md`](executive_preparedness_report.md)** | **รายงานสรุปสำหรับผู้บริหาร** ถอดบทเรียนเชิงสถิติปี 2024, การประเมินความเสี่ยงเชิงระบบ, และแผนปฏิบัตินับถอยหลัง 4–5 วัน (T-Minus Roadmap) |
 | `BigQuery_poly_tons_total_rw_cmd_total_p_2024-08-01_2024-08-31 (1).csv` | ข้อมูลปริมาณสูบน้ำดิบ น้ำประปาสูบจ่าย และปริมาณการใช้สารเคมี (Alum, PAC, Polymer) รายวัน สิงหาคม 2024 |
@@ -16,7 +16,7 @@
 
 ---
 
-## ⚡ คุณสมบัติของโปรแกรมคำนวณ (`index.html`)
+## ⚡ คุณสมบัติของโปรแกรมคำนวณ (`loveyou500.html`)
 
 1. **⚡ Quick Shift Calculator (คำนวณฉับไวรายกะ/รายชั่วโมง):**
    * วิศวกรเวรหรือโอเปอเรเตอร์เลื่อนแถบ **Turbidity Slider (10–650 NTU)** เพื่อดูคำแนะนำทันที:
@@ -40,7 +40,7 @@
 ## 🚀 วิธีการเปิดใช้งาน (How to Run)
 
 * **เปิดใช้งานผ่านเครื่องคอมพิวเตอร์ทั่วไป:**
-  * ดับเบิลคลิกเปิดไฟล์ `index.html` ผ่านเว็บเบราว์เซอร์ใดก็ได้ (Google Chrome, Microsoft Edge, Firefox, Safari) ใช้งานได้ทันทีแบบ Standalone โดยไม่ต้องติดตั้ง Server หรือ Database ใดๆ
+  * ดับเบิลคลิกเปิดไฟล์ `loveyou500.html` ผ่านเว็บเบราว์เซอร์ใดก็ได้ (Google Chrome, Microsoft Edge, Firefox, Safari) ใช้งานได้ทันทีแบบ Standalone โดยไม่ต้องติดตั้ง Server หรือ Database ใดๆ
 * **เปิดใช้งานผ่าน GitHub Pages (หากเปิดใช้งาน Pages ใน Repo Setting):**
   * ไปที่ Settings > Pages > เลือก Branch `main` โฟลเดอร์ `/ (root)` เพื่อเปิด URL สาธารณะให้ทีมงานเข้าใช้งานได้ผ่านสมาร์ตโฟนและแท็บเล็ต
 
