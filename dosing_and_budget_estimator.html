@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MWA Mahasawat - Dosing & Chemical Budget Estimator</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    /* Custom scrollbar and styling tweaks */
+    input[type=range]::-webkit-slider-thumb {
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #2563eb;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body class="bg-[var(--background)] text-[var(--foreground)] antialiased p-4 md:p-6 min-h-screen">
+
+  <!-- Header -->
+  <header class="max-w-7xl mx-auto mb-6 bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-sm">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 mb-1">
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-500 border border-blue-500/20">
+            ระบบจำลองและคำนวณสารเคมี (แบบ B)
+          </span>
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-500 border border-amber-500/20">
+            อ้างอิงสถิติวิกฤต 2024
+          </span>
+        </div>
+        <h1 class="text-2xl font-bold tracking-tight">Dosing & Chemical Budget Estimator</h1>
+        <p class="text-sm text-[var(--muted-foreground)]">
+          โมเดลคำนวณปริมาณสารเคมี อัตราสูบน้ำ และจำลองสต็อกคงคลังเผชิญน้ำขุ่นสูง (> 500 NTU) โรงงานผลิตน้ำมหาสวัสดิ์
+        </p>
+      </div>
+
+      <!-- Quick Status Badges -->
+      <div class="flex flex-wrap gap-3">
+        <div class="bg-[var(--background)] border border-[var(--border)] rounded-xl px-3 py-2 text-right">
+          <div class="text-xs text-[var(--muted-foreground)]">สต็อก Polymer (ยืมบางเขน)</div>
+          <div id="badge-poly-stock" class="text-lg font-bold text-emerald-500">250 kg</div>
+        </div>
+        <div class="bg-[var(--background)] border border-[var(--border)] rounded-xl px-3 py-2 text-right">
+          <div class="text-xs text-[var(--muted-foreground)]">Lead Time มวลน้ำ</div>
+          <div class="text-lg font-bold text-blue-500">4–5 วัน</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto space-y-6">
+
+    <!-- Section 1: Quick Single-Day Calculator -->
+    <section class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-sm">
+      <div class="flex items-center justify-between border-b border-[var(--border)] pb-3 mb-4">
+        <div>
+          <h2 class="text-lg font-semibold flex items-center gap-2">
+            <span>⚡</span> เครื่องมือคำนวณฉับไวรายชั่วโมง / รายกะ (Quick Shift Calculator)
+          </h2>
+          <p class="text-xs text-[var(--muted-foreground)]">ปรับแถบเลื่อนความขุ่นน้ำดิบหน้าโรงงาน เพื่อดูอัตราจ่ายสารเคมีและ Flow สูบน้ำที่แนะนำทันที</p>
+        </div>
+        <span id="quick-alert-badge" class="px-3 py-1 text-xs font-semibold rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+          ปกติ (Normal)
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+        <!-- Input Column -->
+        <div class="lg:col-span-4 space-y-4 bg-[var(--background)] p-4 rounded-xl border border-[var(--border)]">
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label class="text-xs font-medium text-[var(--muted-foreground)]">ค่าความขุ่นน้ำดิบ (RW Turbidity)</label>
+              <span id="quick-turbidity-val" class="text-xl font-bold text-blue-600">30 NTU</span>
+            </div>
+            <input type="range" id="quick-turbidity-slider" min="10" max="650" value="30" step="5" class="w-full accent-blue-600 cursor-pointer">
+            <div class="flex justify-between text-[10px] text-[var(--muted-foreground)] mt-1">
+              <span>10 NTU (ปกติ)</span>
+              <span>150 NTU</span>
+              <span>300 NTU</span>
+              <span>500+ NTU (วิกฤต)</span>
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-[var(--border)] flex items-center justify-between">
+            <span class="text-xs text-[var(--muted-foreground)]">โหมดการเดินระบบ</span>
+            <select id="quick-mode-select" class="text-xs bg-[var(--card)] border border-[var(--border)] rounded-lg px-2 py-1 text-[var(--foreground)]">
+              <option value="auto">คำนวณอัตโนมัติ (Dynamic Throttling)</option>
+              <option value="max_prod">คงกำลังผลิตสูงสุด (Max Production)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Output Cards Grid -->
+        <div class="lg:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <!-- Raw Water Flow -->
+          <div class="bg-[var(--background)] border border-[var(--border)] rounded-xl p-3">
+            <div class="text-[11px] text-[var(--muted-foreground)]">สูบน้ำดิบแนะนำ (RW Flow)</div>
+            <div id="quick-rw-flow" class="text-lg font-bold text-[var(--foreground)] mt-0.5">1,590,000</div>
+            <div class="text-[10px] text-[var(--muted-foreground)] flex justify-between mt-1">
+              <span>m³/วัน</span>
+              <span id="quick-rw-throttle" class="text-emerald-500 font-medium">100% Flow</span>
+            </div>
+          </div>
+
+          <!-- PAC Output -->
+          <div class="bg-[var(--background)] border border-[var(--border)] rounded-xl p-3">
+            <div class="text-[11px] text-[var(--muted-foreground)]">PAC Dosage (Ph 1-3)</div>
+            <div id="quick-pac-dose" class="text-lg font-bold text-blue-600 mt-0.5">12.5 mg/L</div>
+            <div class="text-[10px] text-[var(--muted-foreground)] flex justify-between mt-1">
+              <span>ยอดใช้ทั้งวัน</span>
+              <span id="quick-pac-tons" class="font-semibold text-blue-600">35.2 ตัน/วัน</span>
+            </div>
+          </div>
+
+          <!-- Alum Output -->
+          <div class="bg-[var(--background)] border border-[var(--border)] rounded-xl p-3">
+            <div class="text-[11px] text-[var(--muted-foreground)]">Alum Dosage (Ph 4)</div>
+            <div id="quick-alum-dose" class="text-lg font-bold text-indigo-500 mt-0.5">15.0 mg/L</div>
+            <div class="text-[10px] text-[var(--muted-foreground)] flex justify-between mt-1">
+              <span>ยอดใช้ทั้งวัน</span>
+              <span id="quick-alum-tons" class="font-semibold text-indigo-500">11.5 ตัน/วัน</span>
+            </div>
+          </div>
+
+          <!-- Polymer Output -->
+          <div class="bg-[var(--background)] border border-[var(--border)] rounded-xl p-3 border-amber-500/30">
+            <div class="text-[11px] text-amber-500 font-medium">Polymer Dosage (ทุก Phase)</div>
+            <div id="quick-poly-dose" class="text-lg font-bold text-amber-500 mt-0.5">0.000 mg/L</div>
+            <div class="text-[10px] text-[var(--muted-foreground)] flex justify-between mt-1">
+              <span>ยอดใช้ทั้งวัน</span>
+              <span id="quick-poly-kg" class="font-semibold text-amber-500">0 kg/วัน</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase Breakdown Mini-Table -->
+      <div class="mt-4 pt-3 border-t border-[var(--border)]">
+        <div class="text-xs font-semibold mb-2 text-[var(--muted-foreground)] flex justify-between">
+          <span>แนวทางการจ่ายสารเคมีแยก Phase (Operational Recommendations)</span>
+          <span id="quick-recommendation-text" class="text-emerald-500">สภาวะปกติ ไม่จำเป็นต้องจ่าย Polymer</span>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+          <div class="p-2 rounded-lg bg-[var(--background)] border border-[var(--border)]">
+            <span class="font-medium text-blue-500">Phase 1 (Pulsator):</span>
+            <div id="ph1-summary" class="text-[var(--muted-foreground)] mt-0.5">PAC: 12.5 mg/L | Poly: 0 mg/L</div>
+          </div>
+          <div class="p-2 rounded-lg bg-[var(--background)] border border-[var(--border)]">
+            <span class="font-medium text-blue-500">Phase 2 (Pulsator):</span>
+            <div id="ph2-summary" class="text-[var(--muted-foreground)] mt-0.5">PAC: 12.5 mg/L | Poly: 0 mg/L</div>
+          </div>
+          <div class="p-2 rounded-lg bg-[var(--background)] border border-[var(--border)]">
+            <span class="font-medium text-blue-500">Phase 3 (Superpulsator):</span>
+            <div id="ph3-summary" class="text-[var(--muted-foreground)] mt-0.5">PAC: 10.0 mg/L | Poly: 0 mg/L</div>
+          </div>
+          <div class="p-2 rounded-lg bg-[var(--background)] border border-[var(--border)]">
+            <span class="font-medium text-indigo-500">Phase 4 (Superpulsator):</span>
+            <div id="ph4-summary" class="text-[var(--muted-foreground)] mt-0.5">Alum: 15.0 mg/L | Poly: 0 mg/L</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: 10-Day Crisis Simulation & Stock Runway -->
+    <section class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-sm space-y-5">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-[var(--border)] pb-3">
+        <div>
+          <h2 class="text-lg font-semibold flex items-center gap-2">
+            <span>📅</span> แบบจำลองสถานการณ์ 10 วันล่วงหน้า (10-Day Incident & Stock Runway)
+          </h2>
+          <p class="text-xs text-[var(--muted-foreground)]">จำลองพฤติกรรมมวลน้ำขุ่น 10 วัน คำนวณสารเคมีรวม และเตือนจุดสต็อกวิกฤต (Stock Depletion Day)</p>
+        </div>
+
+        <!-- Presets -->
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-xs text-[var(--muted-foreground)]">ชุดข้อมูลจำลอง:</span>
+          <button onclick="applyPreset('actual2024')" class="px-2.5 py-1 text-xs font-medium rounded-lg bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 border border-blue-500/30 transition">
+            เหตุการณ์จริง 2024 (พีค 525 NTU)
+          </button>
+          <button onclick="applyPreset('moderate')" class="px-2.5 py-1 text-xs font-medium rounded-lg bg-[var(--background)] hover:bg-[var(--border)] border border-[var(--border)] transition">
+            วิกฤตปานกลาง (พีค 350 NTU)
+          </button>
+          <button onclick="applyPreset('extreme')" class="px-2.5 py-1 text-xs font-medium rounded-lg bg-[var(--background)] hover:bg-[var(--border)] border border-[var(--border)] transition">
+            วิกฤตยืดเยื้อ (พีค 550 NTU x 3 วัน)
+          </button>
+        </div>
+      </div>
+
+      <!-- Current Initial Stock Controls -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-[var(--background)] p-3.5 rounded-xl border border-[var(--border)]">
+        <div>
+          <label class="text-xs text-[var(--muted-foreground)] block mb-1">สต็อก Polymer ปัจจุบัน (kg)</label>
+          <div class="flex items-center gap-2">
+            <input type="number" id="init-stock-poly" value="250" class="w-full bg-[var(--card)] border border-[var(--border)] rounded-lg px-2.5 py-1 text-sm font-semibold text-amber-500 focus:outline-none focus:ring-1 focus:ring-blue-500" onchange="runSimulation()">
+            <span class="text-xs text-[var(--muted-foreground)]">kg</span>
+          </div>
+          <span class="text-[10px] text-emerald-500">ยืมบางเขน 250 kg</span>
+        </div>
+
+        <div>
+          <label class="text-xs text-[var(--muted-foreground)] block mb-1">สต็อก PAC ปัจจุบัน (ตัน)</label>
+          <div class="flex items-center gap-2">
+            <input type="number" id="init-stock-pac" value="350" class="w-full bg-[var(--card)] border border-[var(--border)] rounded-lg px-2.5 py-1 text-sm font-semibold text-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" onchange="runSimulation()">
+            <span class="text-xs text-[var(--muted-foreground)]">ตัน</span>
+          </div>
+          <span class="text-[10px] text-[var(--muted-foreground)]">สำรองปกติ ~7–10 วัน</span>
+        </div>
+
+        <div>
+          <label class="text-xs text-[var(--muted-foreground)] block mb-1">สต็อกสารส้ม (Alum) ปัจจุบัน (ตัน)</label>
+          <div class="flex items-center gap-2">
+            <input type="number" id="init-stock-alum" value="150" class="w-full bg-[var(--card)] border border-[var(--border)] rounded-lg px-2.5 py-1 text-sm font-semibold text-indigo-500 focus:outline-none focus:ring-1 focus:ring-blue-500" onchange="runSimulation()">
+            <span class="text-xs text-[var(--muted-foreground)]">ตัน</span>
+          </div>
+          <span class="text-[10px] text-[var(--muted-foreground)]">สำรองปกติ ~10 วัน</span>
+        </div>
+      </div>
+
+      <!-- Critical Warning Box -->
+      <div id="stock-alert-container" class="p-4 rounded-xl border border-red-500/30 bg-red-500/10 text-red-600 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div>
+          <div class="font-bold flex items-center gap-2 text-sm">
+            <span>🚨</span> <span id="stock-alert-title">แจ้งเตือน: สต็อก Polymer จะหมดลงภายในวันที่ Day 3</span>
+          </div>
+          <div id="stock-alert-desc" class="text-xs text-red-500/90 mt-0.5">
+            Polymer 250 กก. รองรับช่วงความขุ่นพุ่งสูงได้เพียง 2.3 วันเท่านั้น จำเป็นต้องมี Polymer เพิ่มเติมอีกอย่างน้อย 469 กก. เพื่อให้พ้นช่วง 10 วันวิกฤต
+          </div>
+        </div>
+        <div class="shrink-0 bg-red-600 text-white font-semibold text-xs px-3 py-1.5 rounded-lg shadow-sm">
+          ขาด Polymer: <span id="stock-alert-deficit">469</span> kg
+        </div>
+      </div>
+
+      <!-- 10-Day Input / Output Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs text-left border-collapse">
+          <thead>
+            <tr class="border-b border-[var(--border)] bg-[var(--background)] text-[var(--muted-foreground)]">
+              <th class="py-2.5 px-3">วัน (Timeline)</th>
+              <th class="py-2.5 px-3">คาดการณ์ความขุ่น (NTU)</th>
+              <th class="py-2.5 px-3">สูบน้ำดิบ (m³/วัน)</th>
+              <th class="py-2.5 px-3">PAC (ตัน)</th>
+              <th class="py-2.5 px-3">Alum (ตัน)</th>
+              <th class="py-2.5 px-3">Polymer (kg)</th>
+              <th class="py-2.5 px-3 text-right">Polymer คงเหลือ (kg)</th>
+              <th class="py-2.5 px-3 text-center">สถานะความเสี่ยง</th>
+            </tr>
+          </thead>
+          <tbody id="sim-table-body" class="divide-y divide-[var(--border)]">
+            <!-- Dynamically Populated by JS -->
+          </tbody>
+          <tfoot class="border-t-2 border-[var(--border)] font-semibold bg-[var(--background)]">
+            <tr>
+              <td class="py-2.5 px-3">ยอดรวม 10 วัน</td>
+              <td class="py-2.5 px-3">-</td>
+              <td id="sim-total-rw" class="py-2.5 px-3 text-[var(--foreground)]">-</td>
+              <td id="sim-total-pac" class="py-2.5 px-3 text-blue-600">-</td>
+              <td id="sim-total-alum" class="py-2.5 px-3 text-indigo-500">-</td>
+              <td id="sim-total-poly" class="py-2.5 px-3 text-amber-500">-</td>
+              <td class="py-2.5 px-3 text-right">-</td>
+              <td class="py-2.5 px-3 text-center">-</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- Visual Chart (Polymer Stock Burn-Down) -->
+      <div class="bg-[var(--background)] p-4 rounded-xl border border-[var(--border)]">
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-xs font-semibold text-[var(--muted-foreground)]">กราฟจำลองการลดลงของสต็อก Polymer (Stock Burn-down Curve)</span>
+          <span class="text-[11px] text-amber-500">เส้นสีแดงคือจุดที่สต็อกหมดเป็นศูนย์</span>
+        </div>
+        <div class="h-44 w-full relative">
+          <svg id="burn-down-svg" class="w-full h-full" viewBox="0 0 600 160" preserveAspectRatio="none">
+            <!-- Drawn dynamically via JS -->
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: Summary Action Card for War Room -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow-sm">
+        <h3 class="font-semibold text-sm mb-2 text-blue-500 flex items-center gap-1.5">
+          <span>📦</span> สรุปความต้องการจัดหา Polymer
+        </h3>
+        <ul class="text-xs space-y-1.5 text-[var(--muted-foreground)]">
+          <li>• มีอยู่จริงปัจจุบัน (ยืมบางเขน): <strong class="text-[var(--foreground)]">250 kg</strong></li>
+          <li>• คาดการณ์ใช้งานตลอดเหตุการณ์: <strong id="rec-poly-demand" class="text-amber-500 font-bold">719 kg</strong></li>
+          <li>• ปริมาณที่ต้องยืมเพิ่ม / จัดซื้อด่วน: <strong id="rec-poly-shortage" class="text-red-500 font-bold">469 kg</strong></li>
+          <li>• ปริมาณ Safety Stock แนะนำ: <strong class="text-[var(--foreground)]">1,000 kg</strong></li>
+        </ul>
+      </div>
+
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow-sm">
+        <h3 class="font-semibold text-sm mb-2 text-indigo-500 flex items-center gap-1.5">
+          <span>🚛</span> แผนการจัดส่ง PAC & Alum
+        </h3>
+        <ul class="text-xs space-y-1.5 text-[var(--muted-foreground)]">
+          <li>• อัตราใช้ PAC เฉลี่ยช่วงพีค: <strong class="text-[var(--foreground)]">90–100 ตัน/วัน</strong></li>
+          <li>• จำนวนรถบรรทุก PAC ที่ต้องการ: <strong class="text-[var(--foreground)]">~4–5 คัน/วัน</strong></li>
+          <li>• สต็อก PAC 350 ตัน จะรองรับได้: <strong class="text-amber-500 font-bold">~3.5 วัน</strong></li>
+          <li>• ต้องเรียกรถส่งเติมตั้งแต่วันที่: <strong class="text-blue-500 font-bold">Day 2 เป็นต้นไป</strong></li>
+        </ul>
+      </div>
+
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow-sm">
+        <h3 class="font-semibold text-sm mb-2 text-emerald-500 flex items-center gap-1.5">
+          <span>⚙️</span> แผนคุมอัตราผลิต (Throttling)
+        </h3>
+        <ul class="text-xs space-y-1.5 text-[var(--muted-foreground)]">
+          <li>• ลด Flow สูบน้ำดิบช่วงพีคเหลือ: <strong class="text-[var(--foreground)]">~1.43–1.45 M m³/วัน</strong></li>
+          <li>• คาดการณ์น้ำประปาลดลงเหลือ: <strong class="text-amber-500 font-bold">~1.37 M m³/วัน</strong></li>
+          <li>• ขาดดุลน้ำสูบจ่ายสู่ท่อประธาน: <strong class="text-red-500 font-bold">~150,000 m³/วัน</strong></li>
+          <li>• ประสานโรงงานบางเขนเสริมแรงดัน: <strong class="text-[var(--foreground)]">ทันทีที่ขุ่น > 300 NTU</strong></li>
+        </ul>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // --- Data & Model Formulas (Calibrated against 2024 actuals) ---
+
+    // 10-Day simulation daily turbidity default (Actual 2024 profile)
+    let simDays = [
+      { day: "Day 1 (T-Day)", turb: 337, label: "มวลน้ำเริ่มเข้า (พีคแตะ 525)" },
+      { day: "Day 2 (T+1)", turb: 487, label: "ขุ่นค้างสูงตลอดวัน (480–524)" },
+      { day: "Day 3 (T+2)", turb: 308, label: "เริ่มชะลอตัว (316–412)" },
+      { day: "Day 4 (T+3)", turb: 185, label: "ลดระดับต่อเนื่อง (156–235)" },
+      { day: "Day 5 (T+4)", turb: 137, label: "ทรงตัวระดับกลาง (125–150)" },
+      { day: "Day 6 (T+5)", turb: 108, label: "ระดับ ~100 NTU" },
+      { day: "Day 7 (T+6)", turb: 85,  label: "ฟื้นตัวเข้าใกล้ปกติ" },
+      { day: "Day 8 (T+7)", turb: 63,  label: "ขุ่นต่ำกว่า 70 NTU" },
+      { day: "Day 9 (T+8)", turb: 48,  label: "ขุ่นต่ำกว่า 50 NTU (เตรียมหยุด Poly)" },
+      { day: "Day 10 (T+9)", turb: 30, label: "กลับสู่สภาวะปกติ" }
+    ];
+
+    function calculateParameters(turb, mode = 'auto') {
+      let rwFlow = 1590000;
+      let throttlePct = 100;
+      let pacDose = 12.5; // mg/L
+      let alumDose = 15.0; // mg/L
+      let polyDose = 0.0; // mg/L
+
+      if (turb <= 50) {
+        rwFlow = 1590000;
+        pacDose = 12.0 + (turb / 50) * 2.5; // 12.0 - 14.5 mg/L
+        alumDose = 14.0 + (turb / 50) * 4.0; // 14.0 - 18.0 mg/L
+        polyDose = 0.0;
+        throttlePct = 100;
+      } else if (turb <= 150) {
+        rwFlow = (mode === 'auto') ? 1540000 : 1590000;
+        pacDose = 14.5 + ((turb - 50) / 100) * 9.5; // 14.5 - 24.0 mg/L
+        alumDose = 18.0 + ((turb - 50) / 100) * 11.0; // 18.0 - 29.0 mg/L
+        polyDose = 0.02 + ((turb - 50) / 100) * 0.035; // 0.02 - 0.055 mg/L
+        throttlePct = (mode === 'auto') ? 96.8 : 100;
+      } else if (turb <= 300) {
+        rwFlow = (mode === 'auto') ? 1490000 : 1590000;
+        pacDose = 24.0 + ((turb - 150) / 150) * 5.0; // 24.0 - 29.0 mg/L
+        alumDose = 29.0 + ((turb - 150) / 150) * 11.0; // 29.0 - 40.0 mg/L
+        polyDose = 0.055 + ((turb - 150) / 150) * 0.025; // 0.055 - 0.080 mg/L
+        throttlePct = (mode === 'auto') ? 93.7 : 100;
+      } else {
+        // High & Extreme (> 300 to 550+ NTU)
+        rwFlow = (mode === 'auto') ? 1435000 : 1590000;
+        let tNorm = Math.min((turb - 300) / 250, 1.0);
+        pacDose = 29.0 + tNorm * 3.3; // 29.0 - 32.3 mg/L (Max observed in 2024)
+        alumDose = 40.0 + tNorm * 7.3; // 40.0 - 47.3 mg/L (Max observed in 2024 Ph4)
+        polyDose = 0.080 + tNorm * 0.021; // 0.080 - 0.101 mg/L (Max observed in 2024 Ph1/2)
+        throttlePct = (mode === 'auto') ? 90.2 : 100;
+      }
+
+      // Proportional chemical usages (Tons & kg)
+      // Phase 1-3 treat ~78% of water using PAC, Phase 4 treats ~22% of water using Alum
+      let pacVolM3 = rwFlow * 0.78;
+      let alumVolM3 = rwFlow * 0.22;
+      let pacTons = (pacVolM3 * pacDose) / 1000000 * 3.3; // Adjusting for commercial liquid PAC concentration density ratio in 2024
+      let alumTons = (alumVolM3 * alumDose) / 1000000 * 3.2; // Adjusting for liquid alum equivalent
+      let polyKg = (rwFlow * polyDose) / 1000; // active dry/liquid kg equivalent
+
+      // Calibrate exact anchor values to 2024 benchmark
+      if (turb >= 480) {
+        pacTons = Math.min(pacTons, 103.4);
+        alumTons = Math.min(alumTons, 36.4);
+        polyKg = Math.min(polyKg, 125.0);
+      }
+
+      return {
+        rwFlow,
+        throttlePct,
+        pacDose: pacDose.toFixed(1),
+        alumDose: alumDose.toFixed(1),
+        polyDose: polyDose.toFixed(3),
+        pacTons: pacTons.toFixed(1),
+        alumTons: alumTons.toFixed(1),
+        polyKg: Math.round(polyKg)
+      };
+    }
+
+    // --- Quick Calculator Interactive Logic ---
+    const quickSlider = document.getElementById('quick-turbidity-slider');
+    const quickTurbVal = document.getElementById('quick-turbidity-val');
+    const quickMode = document.getElementById('quick-mode-select');
+
+    function updateQuickCalculator() {
+      const turb = parseFloat(quickSlider.value);
+      quickTurbVal.innerText = turb + " NTU";
+
+      const res = calculateParameters(turb, quickMode.value);
+
+      document.getElementById('quick-rw-flow').innerText = Number(res.rwFlow).toLocaleString();
+      document.getElementById('quick-rw-throttle').innerText = res.throttlePct.toFixed(1) + "% Flow";
+      document.getElementById('quick-pac-dose').innerText = res.pacDose + " mg/L";
+      document.getElementById('quick-pac-tons').innerText = res.pacTons + " ตัน/วัน";
+      document.getElementById('quick-alum-dose').innerText = res.alumDose + " mg/L";
+      document.getElementById('quick-alum-tons').innerText = res.alumTons + " ตัน/วัน";
+      document.getElementById('quick-poly-dose').innerText = res.polyDose + " mg/L";
+      document.getElementById('quick-poly-kg').innerText = res.polyKg + " kg/วัน";
+
+      // Badge status & Alert styling
+      const alertBadge = document.getElementById('quick-alert-badge');
+      const recText = document.getElementById('quick-recommendation-text');
+      if (turb < 100) {
+        alertBadge.className = "px-3 py-1 text-xs font-semibold rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20";
+        alertBadge.innerText = "ปกติ (Normal)";
+        recText.className = "text-emerald-500";
+        recText.innerText = "สภาวะปกติ ไม่จำเป็นต้องจ่าย Polymer";
+      } else if (turb < 250) {
+        alertBadge.className = "px-3 py-1 text-xs font-semibold rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20";
+        alertBadge.innerText = "เฝ้าระวัง (Alert Level 1)";
+        recText.className = "text-amber-500";
+        recText.innerText = "เริ่มจ่าย Polymer ขั้นต่ำ ~0.03-0.05 mg/L เตรียมลด Flow 3-5%";
+      } else {
+        alertBadge.className = "px-3 py-1 text-xs font-semibold rounded-full bg-red-500/10 text-red-500 border border-red-500/20";
+        alertBadge.innerText = "วิกฤตความขุ่นสูง (Severe Emergency)";
+        recText.className = "text-red-500 font-semibold";
+        recText.innerText = "จ่าย Polymer เต็มพิกัด (0.08-0.10 mg/L) และลด Flow สูบน้ำลง ~10%";
+      }
+
+      // Update Phase Breakdown
+      document.getElementById('ph1-summary').innerText = `PAC: ${res.pacDose} mg/L | Poly: ${res.polyDose} mg/L`;
+      document.getElementById('ph2-summary').innerText = `PAC: ${res.pacDose} mg/L | Poly: ${res.polyDose} mg/L`;
+      document.getElementById('ph3-summary').innerText = `PAC: ${(res.pacDose * 0.95).toFixed(1)} mg/L | Poly: ${(res.polyDose * 0.7).toFixed(3)} mg/L`;
+      document.getElementById('ph4-summary').innerText = `Alum: ${res.alumDose} mg/L | Poly: ${(res.polyDose * 0.7).toFixed(3)} mg/L`;
+    }
+
+    quickSlider.addEventListener('input', updateQuickCalculator);
+    quickMode.addEventListener('change', updateQuickCalculator);
+
+    // --- 10-Day Simulation & Stock Runway ---
+    function runSimulation() {
+      let initPoly = parseFloat(document.getElementById('init-stock-poly').value) || 0;
+      let initPac = parseFloat(document.getElementById('init-stock-pac').value) || 0;
+      let initAlum = parseFloat(document.getElementById('init-stock-alum').value) || 0;
+
+      let tbody = document.getElementById('sim-table-body');
+      tbody.innerHTML = '';
+
+      let currentPolyStock = initPoly;
+      let depletionDay = null;
+      let totalRw = 0;
+      let totalPac = 0;
+      let totalAlum = 0;
+      let totalPoly = 0;
+
+      let stockPoints = [ { day: 0, stock: initPoly } ];
+
+      simDays.forEach((item, idx) => {
+        let calc = calculateParameters(item.turb, 'auto');
+        let polyUsed = calc.polyKg;
+        let pacUsed = parseFloat(calc.pacTons);
+        let alumUsed = parseFloat(calc.alumTons);
+
+        totalRw += calc.rwFlow;
+        totalPac += pacUsed;
+        totalAlum += alumUsed;
+        totalPoly += polyUsed;
+
+        currentPolyStock -= polyUsed;
+        stockPoints.push({ day: idx + 1, stock: currentPolyStock });
+
+        if (currentPolyStock < 0 && depletionDay === null) {
+          depletionDay = idx + 1;
+        }
+
+        let isDepleted = currentPolyStock < 0;
+        let rowClass = isDepleted ? "bg-red-500/5" : "";
+        let stockColor = isDepleted ? "text-red-500 font-bold" : "text-emerald-500 font-semibold";
+        let statusTag = isDepleted 
+          ? '<span class="px-2 py-0.5 rounded text-[10px] bg-red-500/10 text-red-500 border border-red-500/20 font-bold">Polymer หมด!</span>'
+          : (item.turb > 300 
+              ? '<span class="px-2 py-0.5 rounded text-[10px] bg-amber-500/10 text-amber-500 border border-amber-500/20">พีควิกฤต</span>' 
+              : '<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">ปลอดภัย</span>');
+
+        let tr = document.createElement('tr');
+        tr.className = rowClass;
+        tr.innerHTML = `
+          <td class="py-2 px-3 font-medium">
+            <div>${item.day}</div>
+            <div class="text-[10px] text-[var(--muted-foreground)]">${item.label}</div>
+          </td>
+          <td class="py-2 px-3 font-semibold text-blue-600">${item.turb} NTU</td>
+          <td class="py-2 px-3">${Number(calc.rwFlow).toLocaleString()}</td>
+          <td class="py-2 px-3 text-blue-600 font-medium">${calc.pacTons}</td>
+          <td class="py-2 px-3 text-indigo-500 font-medium">${calc.alumTons}</td>
+          <td class="py-2 px-3 text-amber-500 font-semibold">${calc.polyKg}</td>
+          <td class="py-2 px-3 text-right ${stockColor}">${currentPolyStock > 0 ? currentPolyStock : currentPolyStock} kg</td>
+          <td class="py-2 px-3 text-center">${statusTag}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Totals
+      document.getElementById('sim-total-rw').innerText = Number(totalRw).toLocaleString() + " m³";
+      document.getElementById('sim-total-pac').innerText = totalPac.toFixed(1) + " ตัน";
+      document.getElementById('sim-total-alum').innerText = totalAlum.toFixed(1) + " ตัน";
+      document.getElementById('sim-total-poly').innerText = totalPoly.toLocaleString() + " kg";
+
+      // Alert Container updates
+      let alertBox = document.getElementById('stock-alert-container');
+      let alertTitle = document.getElementById('stock-alert-title');
+      let alertDesc = document.getElementById('stock-alert-desc');
+      let alertDeficit = document.getElementById('stock-alert-deficit');
+
+      let deficit = Math.max(0, totalPoly - initPoly);
+      document.getElementById('rec-poly-demand').innerText = totalPoly + " kg";
+      document.getElementById('rec-poly-shortage').innerText = deficit + " kg";
+
+      if (depletionDay) {
+        alertBox.className = "p-4 rounded-xl border border-red-500/30 bg-red-500/10 text-red-600 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3";
+        alertTitle.innerText = `🚨 แจ้งเตือน: สต็อก Polymer จะหมดลงในวันที่ Day ${depletionDay}!`;
+        alertDesc.innerText = `Polymer ที่ยืมมา ${initPoly} kg จะหมดก่อนสิ้นสุดเหตุการณ์ ขาดแคลนอีก ${deficit} kg จำเป็นต้องจัดหารถบรรทุกไปยืมบางเขนเพิ่ม หรือสั่งซื้อด่วนทันที`;
+        alertDeficit.innerText = deficit;
+      } else {
+        alertBox.className = "p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3";
+        alertTitle.innerText = `✅ สต็อก Polymer เพียงพอตลอด 10 วันสถานการณ์`;
+        alertDesc.innerText = `สต็อกปัจจุบัน ${initPoly} kg เพียงพอกับปริมาณการใช้งานคาดการณ์ ${totalPoly} kg`;
+        alertDeficit.innerText = "0";
+      }
+
+      drawBurnDownChart(stockPoints, initPoly);
+    }
+
+    // --- Draw SVG Burn-down chart ---
+    function drawBurnDownChart(points, initStock) {
+      let svg = document.getElementById('burn-down-svg');
+      let w = 600, h = 160;
+      let pLeft = 40, pRight = 20, pTop = 20, pBottom = 25;
+      let chartW = w - pLeft - pRight;
+      let chartH = h - pTop - pBottom;
+
+      let minStock = Math.min(0, ...points.map(p => p.stock));
+      let maxStock = Math.max(initStock, ...points.map(p => p.stock)) * 1.05;
+      let stockRange = maxStock - minStock || 1;
+
+      function getX(day) {
+        return pLeft + (day / 10) * chartW;
+      }
+      function getY(val) {
+        return pTop + chartH - ((val - minStock) / stockRange) * chartH;
+      }
+
+      let yZero = getY(0);
+
+      // Path generator
+      let pathD = `M ${getX(points[0].day)} ${getY(points[0].stock)}`;
+      points.forEach(p => {
+        pathD += ` L ${getX(p.day)} ${getY(p.stock)}`;
+      });
+
+      let svgHtml = `
+        <!-- Background Grid Lines -->
+        <line x1="${pLeft}" y1="${pTop}" x2="${w - pRight}" y2="${pTop}" stroke="currentColor" stroke-opacity="0.08" />
+        <line x1="${pLeft}" y1="${yZero}" x2="${w - pRight}" y2="${yZero}" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4" />
+        <line x1="${pLeft}" y1="${h - pBottom}" x2="${w - pRight}" y2="${h - pBottom}" stroke="currentColor" stroke-opacity="0.08" />
+        
+        <!-- Zero Threshold Label -->
+        <text x="${pLeft + 5}" y="${yZero - 5}" fill="#ef4444" font-size="10" font-weight="bold">Zero Stock (หมดคลัง)</text>
+
+        <!-- Stock Curve -->
+        <path d="${pathD}" fill="none" stroke="#f59e0b" stroke-width="3" stroke-linecap="round" />
+      `;
+
+      // Draw Points
+      points.forEach(p => {
+        let cx = getX(p.day);
+        let cy = getY(p.stock);
+        let circleColor = p.stock < 0 ? "#ef4444" : "#10b981";
+        svgHtml += `
+          <circle cx="${cx}" cy="${cy}" r="4" fill="${circleColor}" stroke="#ffffff" stroke-width="1.5" />
+          <text x="${cx}" y="${h - 8}" fill="currentColor" fill-opacity="0.6" font-size="9" text-anchor="middle">D${p.day}</text>
+        `;
+      });
+
+      svg.innerHTML = svgHtml;
+    }
+
+    // --- Presets Handler ---
+    function applyPreset(type) {
+      if (type === 'actual2024') {
+        simDays = [
+          { day: "Day 1 (T-Day)", turb: 337, label: "มวลน้ำเริ่มเข้า (พีคแตะ 525)" },
+          { day: "Day 2 (T+1)", turb: 487, label: "ขุ่นค้างสูงตลอดวัน (480–524)" },
+          { day: "Day 3 (T+2)", turb: 308, label: "เริ่มชะลอตัว (316–412)" },
+          { day: "Day 4 (T+3)", turb: 185, label: "ลดระดับต่อเนื่อง (156–235)" },
+          { day: "Day 5 (T+4)", turb: 137, label: "ทรงตัวระดับกลาง (125–150)" },
+          { day: "Day 6 (T+5)", turb: 108, label: "ระดับ ~100 NTU" },
+          { day: "Day 7 (T+6)", turb: 85,  label: "ฟื้นตัวเข้าใกล้ปกติ" },
+          { day: "Day 8 (T+7)", turb: 63,  label: "ขุ่นต่ำกว่า 70 NTU" },
+          { day: "Day 9 (T+8)", turb: 48,  label: "ขุ่นต่ำกว่า 50 NTU (เตรียมหยุด Poly)" },
+          { day: "Day 10 (T+9)", turb: 30, label: "กลับสู่สภาวะปกติ" }
+        ];
+      } else if (type === 'moderate') {
+        simDays = [
+          { day: "Day 1 (T-Day)", turb: 180, label: "มวลน้ำเข้าสู่คลองประปา" },
+          { day: "Day 2 (T+1)", turb: 350, label: "ขุ่นสูงสุดของเหตุการณ์" },
+          { day: "Day 3 (T+2)", turb: 280, label: "เริ่มลดระดับ" },
+          { day: "Day 4 (T+3)", turb: 190, label: "ชะลอตัว" },
+          { day: "Day 5 (T+4)", turb: 120, label: "ระดับปานกลาง" },
+          { day: "Day 6 (T+5)", turb: 80,  label: "ควบคุมได้ง่าย" },
+          { day: "Day 7 (T+6)", turb: 60,  label: "ใกล้เคียงปกติ" },
+          { day: "Day 8 (T+7)", turb: 45,  label: "หยุดจ่าย Polymer" },
+          { day: "Day 9 (T+8)", turb: 35,  label: "ปกติ" },
+          { day: "Day 10 (T+9)", turb: 25, label: "ปกติ" }
+        ];
+      } else if (type === 'extreme') {
+        simDays = [
+          { day: "Day 1 (T-Day)", turb: 380, label: "มวลน้ำแรกพุ่งเข้าเฉียบพลัน" },
+          { day: "Day 2 (T+1)", turb: 550, label: "ขุ่นสูงสุดระดับวิกฤต วันที่ 1" },
+          { day: "Day 3 (T+2)", turb: 530, label: "ขุ่นสูงสุดระดับวิกฤต วันที่ 2" },
+          { day: "Day 4 (T+3)", turb: 510, label: "ขุ่นสูงสุดระดับวิกฤต วันที่ 3" },
+          { day: "Day 5 (T+4)", turb: 390, label: "ระบายน้ำออกช้า" },
+          { day: "Day 6 (T+5)", turb: 280, label: "ตะกอนยังคงค้างสูง" },
+          { day: "Day 7 (T+6)", turb: 190, label: "เริ่มลดลง" },
+          { day: "Day 8 (T+7)", turb: 120, label: "ทรงตัว" },
+          { day: "Day 9 (T+8)", turb: 80,  label: "เฝ้าระวัง" },
+          { day: "Day 10 (T+9)", turb: 50, label: "กลับสู่เกณฑ์ควบคุม" }
+        ];
+      }
+      runSimulation();
+    }
+
+    // Initialize on load
+    updateQuickCalculator();
+    runSimulation();
+  </script>
+</body>
+</html>
